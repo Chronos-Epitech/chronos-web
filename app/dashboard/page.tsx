@@ -1,10 +1,5 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import {
-  SignedIn,
-  UserButton,
-} from "@clerk/nextjs";
+import { SignedIn, UserButton } from "@clerk/nextjs";
+import InviteForm from "@/components/invite-form";
 
 export default function Dashboard() {
   return (
@@ -16,9 +11,7 @@ export default function Dashboard() {
       </header>
       <div className="flex flex-col items-center justify-center h-screen">
         <h1 className="text-4xl font-bold">Hello World</h1>
-        <Button variant="secondary" className="cursor-pointer">
-          Click me
-        </Button>
+        <InviteForm />
       </div>
     </>
   );
