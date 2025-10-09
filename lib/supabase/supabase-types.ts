@@ -14,21 +14,150 @@ export type Database = {
   }
   public: {
     Tables: {
-      Teams: {
+      schedules: {
+        Row: {
+          arrival: string
+          departure: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          arrival?: string
+          departure?: string
+          id?: string
+          user_id?: string
+        }
+        Update: {
+          arrival?: string
+          departure?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
         Row: {
           id: number
-          Manager: number | null
-          Name: string
+          name: string
+          user_id: string
         }
         Insert: {
           id?: number
-          Manager?: number | null
-          Name?: string
+          name: string
+          user_id?: string
         }
         Update: {
           id?: number
-          Manager?: number | null
-          Name?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          created_at: string | null
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          team_id?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string | null
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          id: string
+          manager_id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          manager_id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          manager_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          role: Database["public"]["Enums"]["role"]
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          first_name: string
+          id: string
+          last_name: string
+          role?: Database["public"]["Enums"]["role"]
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          role?: Database["public"]["Enums"]["role"]
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -40,7 +169,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      role: "admin" | "manager" | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -167,6 +296,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      role: ["admin", "manager", "member"],
+    },
   },
 } as const
