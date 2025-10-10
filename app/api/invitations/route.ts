@@ -4,7 +4,7 @@ import {
   getAllInvitations,
   revokeInvitation,
 } from "@/lib/clerk/clerk";
-import { withAuth } from "@/lib/with-auth";
+import { withAdmin, withManager } from "@/lib/http-handlers";
 import {
   getJsonOrNull,
   handleClerkApiError,
@@ -56,6 +56,9 @@ async function revokeInvitationRoute(req: NextRequest) {
   }
 }
 
-export const GET = withAuth(getAllInvitationsRoute);
-export const POST = withAuth(sendInvitationRoute);
-export const DELETE = withAuth(revokeInvitationRoute);
+// admin can get all invitations
+export const GET = withAdmin(getAllInvitationsRoute);
+// manager can send invitations
+export const POST = withManager(sendInvitationRoute);
+// admin can revoke invitations
+export const DELETE = withAdmin(revokeInvitationRoute);
