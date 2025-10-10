@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  sendInvitation,
-  getAllInvitations,
-  revokeInvitation,
+  clerkSendInvitation,
+  clerkGetAllInvitations,
+  clerkRevokeInvitation,
 } from "@/lib/clerk/clerk";
 import { withAdmin, withManager } from "@/lib/http-handlers";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@/lib/http";
 
 async function getAllInvitationsRoute() {
-  const invitations = await getAllInvitations();
+  const invitations = await clerkGetAllInvitations();
   return NextResponse.json(invitations);
 }
 
@@ -29,7 +29,7 @@ async function sendInvitationRoute(req: NextRequest) {
     return NextResponse.json({ error: "Role required" }, { status: 400 });
 
   try {
-    const invitation = await sendInvitation(email, role);
+    const invitation = await clerkSendInvitation(email, role);
     return NextResponse.json(invitation);
   } catch (error: unknown) {
     return handleClerkApiError(error, "Failed to create invitation.");
@@ -49,7 +49,7 @@ async function revokeInvitationRoute(req: NextRequest) {
     );
 
   try {
-    const invitation = await revokeInvitation(invitationId);
+    const invitation = await clerkRevokeInvitation(invitationId);
     return NextResponse.json(invitation);
   } catch (error: unknown) {
     return handleClerkApiError(error, "Failed to revoke invitation.");
