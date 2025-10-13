@@ -2,7 +2,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
-import { CardHeader } from "./card"
+
 
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -34,7 +34,7 @@ function CardFirstName({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div
             data-slot="card-name"
-            className={cn("max-w-40 text-center sm:text-left text-sm place-content-center", className)}
+            className={cn("w-full text-center sm:w-full sm:text-left text-sm place-content-center", className)}
             {...props}
         />
     )
@@ -44,7 +44,7 @@ function CardLastName({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div
             data-slot="card-name"
-            className={cn("max-w-40 text-center sm:text-left text-sm font-bold place-content-center", className)}
+            className={cn("text-center sm:w-full sm:text-left text-sm font-bold place-content-center", className)}
             {...props}
         />
     )
