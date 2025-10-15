@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --background: oklch(0.9751 0.0127 244.2507);
   --foreground: oklch(0.3729 0.0306 259.7328);
@@ -109,7 +111,7 @@
   --shadow-2xl: 3px 3px 8px -1px hsl(0 0% 0% / 0.25);
 }
 
-:root {
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -162,16 +164,12 @@
   --shadow-2xl: var(--shadow-2xl);
 }
 
+
 @layer base {
   * {
-    border-color: var(--color-border);
-    outline: 1px solid var(--color-ring);
-    outline-offset: 2px;
-    /* If you want a 50% opacity for the outline, use: */
-    /* outline-color: color-mix(in srgb, var(--color-ring) 50%, transparent); */
+    @apply border-border outline-ring/50;
   }
   body {
-    background: var(--color-background);
-    color: var(--color-foreground);
+    @apply bg-background text-foreground;
   }
 }
