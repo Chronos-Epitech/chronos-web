@@ -41,7 +41,7 @@ export default function Dashboard() {
       {/* Content */}
       <div className="pt-24 flex flex-col gap-4 sm:flex-row sm:gap-8 px-4 sm:px-8 sm:h-full">
 
-        {/* Left panel */}
+        {/* left screen */}
         <div className="flex flex-col gap-4 sm:gap-6 w-full mt-13 sm:w-1/3">
 
           {/* User Card */}
@@ -102,7 +102,7 @@ export default function Dashboard() {
 
         </div>
 
-        {/* Right panel (Calendar) */}
+        {/* right screen*/}
         <div className="w-full sm:w-2/3 flex flex-col mt-4 sm:mt-0">
           {/* Dropdown */}
           <DropdownMenu>
