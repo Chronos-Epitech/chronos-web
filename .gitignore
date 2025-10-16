@@ -40,5 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+<<<<<<< HEAD
+# IDE / Editors
+.vs/
+=======
 # clerk configuration (can include secrets)
 /.clerk/
+>>>>>>> 5151b3b5044ebc1b875819a0e8eb4a8261237b63
