@@ -5,6 +5,7 @@ import Link from "next/link"
 import {logoPath} from "@/lib/config"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
+import { SignedIn, UserButton } from "@clerk/nextjs";
 
 // Default image path: place your file at `public/images/Copilot_20251014_102800.png`
 // so it is served at '/images/Copilot_20251014_102800.png'.
@@ -170,25 +171,13 @@ function SmallProfileCard({ ...props }: ProfileCardProps) {
 
   return (
 <div>
-            <button
-                    aria-haspopup="true"
-                    aria-expanded={open}
-                    onClick={() => setOpen((s) => !s)}
-                    onKeyDown={(e) => {
-                      if (e.key === "ArrowDown") {
-                        e.preventDefault()
-                        setOpen(true)
-                      }
-                    }}
-                    className="focus:outline-none"
-                >
+
     <Card className="z-50 m-2 w-12 h-12 sm:w-fit sm:max-w-100 sm:h-fit py-1 flex-row items-center justify-center sm:p-1 bg-card text-card-foreground flex rounded-full sm:rounded-xl border shadow-sm place-content-center transition-transform transform-gpu hover:scale-105 overflow-hidden">
 
-        <CardAvatar className="p-0 sm:w-14 flex items-center justify-center h-full overflow-hidden min-w-0">
-          {/* Avatar wrapper should not apply object-cover; center via the image itself */}
-          <Avatar className="rounded-full overflow-hidden h-10 w-10 sm:h-14 sm:w-14 object-cover flex-shrink-0 block">
-            <SmartAvatar src={props.image ?? props.avatar ?? logoPath} fallback={props.avatarFallback} />
-          </Avatar>
+        <CardAvatar className="p-2 sm:w-14 flex items-center justify-center h-full overflow-hidden min-w-0">
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
         </CardAvatar>
         
 
@@ -199,40 +188,11 @@ function SmallProfileCard({ ...props }: ProfileCardProps) {
 
      
     </Card>
-      </button> 
 
-      {open && (
-  <div
-    onMouseEnter={() => setOpen(true)}
-    onMouseLeave={() => {
-  setTimeout(() => setOpen(false), 200); // délai de 200ms
-}}
-    className="absolute right-2 z-50"
-  >
-    <div
-      role="menu"
-      aria-orientation="vertical"
-      className="w-40 bg-card border rounded-md shadow-md ring-1 ring-black/5 animate-in fade-in-0 duration-150"
-      onKeyDown={(e) => {
-        if (e.key === "Escape") setOpen(false);
-      }}
-    >
-      <Link
-        href="/profile"
-        role="menuitem"
-        ref={firstItemRef}
-        tabIndex={0}
-        className="block px-3 py-2 text-sm hover:bg-card-foreground/10 focus:bg-card-foreground/20 outline-none"
-        onKeyDown={(e) => {
-          if (e.key === "Escape") setOpen(false);
-        }}
-      >
-        Edit profile
-      </Link>
+
     </div>
-  </div>
-)}       
-    </div>
+
+
   )
 }
 

@@ -17,8 +17,6 @@ export default function ManagerLayout({
         <Logo />
         <HeaderTitle title="Manager Dashboard" className="absolute left-1/2 transform -translate-x-1/2" />
         <SmallProfileCard
-          avatar="/images/Copilot_20251014_102800.png"
-          avatarFallback="U"
           firstName="User Name"
           lastName="User Last Name"
         />
