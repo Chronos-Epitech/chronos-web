@@ -21,11 +21,6 @@ export default function MathisPage() {
     return (
         <div className="relative h-screen w-full">
 
-            <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
-                style={{ backgroundImage: "url('/Background.jpg')" }}
-            ></div>
-
             <Link href="/" className="absolute top-4 left-4 z-20">
                 <Button variant="ghost" className="cursor-pointer">
                     Acceuil
