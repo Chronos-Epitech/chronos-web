@@ -10,7 +10,7 @@ This project is structured as a monorepo with the following components:
 - **API** (`apps/api/`) - tRPC backend server
 - **Data Layer** (`packages/data/`) - Shared data access layer
 - **Supabase Integration** (`packages/supabase/`) - Database and authentication
-- **Types** (`packages/types/`) - Shared TypeScript types
+- **Types** (`packages/types/`) - Shared TypeScript types and Zod schemas
 
 ## Tech Stack
 
@@ -19,7 +19,8 @@ This project is structured as a monorepo with the following components:
 - **API Server**: Fastify with tRPC adapter
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Clerk with Supabase integration
-- **Styling**: Tailwind CSS
+- **Type Safety**: Shared Zod schemas and generated Supabase types
+- **UI Components**: shadcn/ui with Tailwind CSS
 - **Package Manager**: Bun
 - **Deployment**: Docker
 
@@ -73,7 +74,7 @@ The REST API is automatically generated from tRPC procedures using the `trpc-to-
 ├── packages/
 │   ├── data/         # Data access layer
 │   ├── supabase/     # Database migrations and client
-│   └── types/        # Shared TypeScript types
+│   └── types/        # Shared TypeScript types and Zod schemas
 └── nginx/            # Nginx configuration for production
 ```
 
@@ -119,6 +120,16 @@ This project uses **Clerk** for authentication with **Supabase** integration and
   - Full database remote schema
   - RLS policies migrations
 
+## Type Generation
+
+Generate Supabase types from the database schema:
+
+```bash
+bun run generate:types
+```
+
+This command uses the Supabase CLI to generate TypeScript types directly from your database schema and saves them to `packages/types/src/supabase-types.ts`.
+
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
@@ -127,4 +138,5 @@ This project uses **Clerk** for authentication with **Supabase** integration and
 - [Fastify Documentation](https://www.fastify.io/docs/latest/)
 - [Clerk Documentation](https://clerk.com/docs)
 - [Supabase Documentation](https://supabase.com/docs)
+- [shadcn/ui Documentation](https://ui.shadcn.com/)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
