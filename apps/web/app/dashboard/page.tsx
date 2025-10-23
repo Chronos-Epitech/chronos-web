@@ -1,85 +1,98 @@
-import { SignedIn, UserButton } from "@clerk/nextjs";
-import { currentUser } from "@clerk/nextjs/server";
-import InviteForm from "@/components/invite-form";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
+import Image from "next/image";
+import { UserButton } from "@clerk/nextjs";
 import { trpc } from "@/trpc/server";
-import { createNextServerSupabaseClient } from "@chronos/supabase/src/next-server";
-import { TRPCClientError } from "@trpc/client";
+import { CalendarContainer } from "@/components/calendar-container";
+import { ScheduleButtons } from "@/components/schedule-buttons";
+import { TRPCError } from "@trpc/server";
+import type { Team } from "@chronos/types";
+import { z } from "zod";
 
 export default async function Dashboard() {
-  const user = await currentUser();
-  if (
-    user?.publicMetadata.role !== "manager" &&
-    user?.publicMetadata.role !== "admin"
-  ) {
-    return (
-      <>
-        <header className="flex justify-end items-center p-4 gap-4 h-16">
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-        </header>
-        <div className="flex flex-col items-center gap-4 justify-center min-h-screen">
-          <h1 className="text-4xl font-bold">Unauthorized</h1>
-        </div>
-      </>
-    );
-  }
-
-  const supabase = createNextServerSupabaseClient();
-
-  let teams;
+  let teams: z.infer<typeof Team>[] = [];
   try {
     teams = await trpc.team.getAll.query();
-    console.log("trpc teams", teams);
   } catch (error) {
-    if (error instanceof TRPCClientError) {
-      console.error("TRPC Client Error fetching teams: ", error.message);
+    if (error instanceof TRPCError && error.code === "FORBIDDEN") {
+      teams = [];
+      console.error("FORBIDDEN");
     } else {
-      console.error("Unknown error fetching teams: ", error);
+      console.error(error);
     }
   }
 
-  const { data: userData, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", user?.id)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-
-  if (!userData) throw new Error("User not found");
-
   return (
-    <>
-      <header className="flex justify-end items-center p-4 gap-4 h-16">
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </header>
-      <div className="flex flex-col items-center gap-4 justify-center min-h-screen">
-        <h1 className="text-4xl font-bold">Hello {user?.firstName}</h1>
-        <p className="text-lg">You are a {user?.publicMetadata.role}</p>
-        <h2 className="text-2xl font-bold">
-          {teams ? (
-            <>
-              <p>Teams:</p>
-              <ul>
-                {teams.map((team) => (
-                  <li key={team.id}>{team.name}</li>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <p>No teams found</p>
-          )}
-        </h2>
-        <InviteForm />
-        <div className="flex flex-col items-center gap-4">
-          <h2 className="text-2xl font-bold">
-            {userData.first_name} {userData.last_name}
-          </h2>
-          <p className="text-lg">{userData.email}</p>
+    <div className="relative min-h-screen w-full">
+      {/* Header */}
+      <div className="w-full h-20 bg-white px-4 sm:px-8 border-b border-gray-200 flex items-center justify-between fixed top-0 z-10">
+        <div className="flex items-center gap-2">
+          <Image
+            width={48}
+            height={48}
+            src="/icon.png"
+            alt="logo"
+            className="object-cover"
+          />
+          <div>
+            <h1 className="text-lg sm:text-2xl font-bold">CHRONOS</h1>
+            <p className="text-xs sm:text-sm font-medium">
+              Manage your time like a pro
+            </p>
+          </div>
         </div>
+        <UserButton />
       </div>
-    </>
+
+      {/* Content */}
+      <div className="pt-24 flex flex-col gap-4 sm:flex-row sm:gap-8 px-4 sm:px-8 sm:h-full">
+        {/* left screen */}
+        <div className="flex flex-col gap-4 sm:gap-6 w-full mt-13 sm:w-1/3">
+          {/* User Card */}
+          <Card className="flex flex-col gap-2 p-4 relative">
+            <div className="flex flex-col gap-1">
+              <Label className="text-sm sm:text-base">Last Name:</Label>
+              <Label className="text-sm sm:text-base">First Name:</Label>
+              <div className="flex justify-start mt-2">
+                <Button
+                  variant="secondary"
+                  className="w-auto px-4 py-2 text-sm sm:text-base mt-3"
+                >
+                  Changes
+                </Button>
+              </div>
+            </div>
+            <Avatar className="h-full w-1/4 sm:w-1/4 absolute right-0 bottom-0">
+              <AvatarImage
+                src="id.png"
+                alt="User Avatar"
+                className="object-cover"
+              />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+          </Card>
+
+          {/* Card Schedules */}
+          <Card>
+            <ScheduleButtons />
+          </Card>
+          {teams.length > 0 &&
+            teams.map((team) => (
+              <div key={team.id} className="w-full flex flex-col mt-4 sm:mt-0">
+                <Card className="flex flex-col gap-2 p-4">
+                  <div key={team.id}>
+                    <p>{team.name}</p>
+                  </div>
+                </Card>
+              </div>
+            ))}
+        </div>
+
+        {/* right screen*/}
+        <CalendarContainer />
+      </div>
+    </div>
   );
 }

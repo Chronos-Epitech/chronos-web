@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)"]);
+const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/"]);
+const isManagerRoute = createRouteMatcher(["/manager-dashboard(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -8,10 +9,17 @@ export default clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
   if (
+    isManagerRoute(req) &&
+    (await auth()).sessionClaims?.metadata?.role !== "manager" &&
+    (await auth()).sessionClaims?.metadata?.role !== "admin"
+  ) {
+    return Response.redirect(new URL("/dashboard", req.url));
+  }
+  if (
     isAdminRoute(req) &&
     (await auth()).sessionClaims?.metadata?.role !== "admin"
   ) {
-    return Response.redirect(new URL("/", req.url));
+    return Response.redirect(new URL("/dashboard", req.url));
   }
 });
 
