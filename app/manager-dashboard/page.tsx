@@ -1,4 +1,4 @@
-import {ProfileCard} from "@/components/ui/profileCard";
+import {ProfileCard} from "@/components/ui/profile-card";
 
     
 export default function Home() {
