@@ -16,7 +16,7 @@ This project is structured as a monorepo with the following components:
 
 - **Frontend**: Next.js 15 with App Router
 - **Backend**: tRPC for type-safe APIs with OpenAPI REST endpoints
-- **Server**: Fastify with tRPC adapter
+- **API Server**: Fastify with tRPC adapter
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Clerk with Supabase integration
 - **Styling**: Tailwind CSS
