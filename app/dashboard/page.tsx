@@ -3,66 +3,17 @@ import Link from "next/link";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/squared-avatar";
-import {
-   Card, 
-   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle, } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarWeek } from "@/components/ui/calendar-week";
 import { toast } from "sonner";
-import { TrendingUp } from "lucide-react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-
-export const description = "An area chart with a legend"
-
-
-const chartDataWeek = [
-  { day: "Lun", Departure: 186, Arrival: 80 },
-  { day: "Mar", Departure: 305, Arrival: 200 },
-  { day: "Mer", Departure: 237, Arrival: 120 },
-  { day: "Jeu", Departure: 73, Arrival: 190 },
-  { day: "Ven", Departure: 209, Arrival: 130 },
-  { day: "Sam", Departure: 214, Arrival: 140 },
-  { day: "Dim", Departure: 150, Arrival: 90 },
-]
-
-const chartDataMonth = [
-  { month: "January", Departure: 186, Arrival: 80 },
-  { month: "February", Departure: 305, Arrival: 200 },
-  { month: "March", Departure: 237, Arrival: 120 },
-  { month: "April", Departure: 73, Arrival: 190 },
-  { month: "May", Departure: 209, Arrival: 130 },
-  { month: "June", Departure: 214, Arrival: 140 },
-]
-const chartConfig = {
-  Departure: {
-    label: "Departure",
-    color: "#1e40af", // Bleu foncé
-  },
-  Arrival: {
-    label: "Arrival", 
-    color: "#3b82f6", // Bleu plus clair
-  },
-} satisfies ChartConfig
 
 export default function Dashboard() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
@@ -91,7 +42,7 @@ export default function Dashboard() {
       <div className="pt-24 flex flex-col gap-4 sm:flex-row sm:gap-8 px-4 sm:px-8 sm:h-full">
 
         {/* left screen */}
-        <div className="flex flex-col gap-4 sm:gap-4 w-full sm:w-1/3">
+        <div className="flex flex-col gap-4 sm:gap-6 w-full mt-13 sm:w-1/3">
 
           {/* User Card */}
           <Card className="flex flex-col gap-2 p-4 relative">
@@ -148,88 +99,36 @@ export default function Dashboard() {
               DEPARTURE
             </Button>
           </Card>
-{/* Area Chart */}
-          <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Charts - {mode === "week" ? "Last Week" : "Last Months"}</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs">
-                {mode === "week" ? "Semaine" : "Mois"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setMode("week")}>Semaine</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setMode("month")}>Mois</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <AreaChart
-            accessibilityLayer
-            data={mode === "week" ? chartDataWeek : chartDataMonth}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey={mode === "week" ? "day" : "month"}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => mode === "week" ? value : value.slice(0, 3)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Area
-              dataKey="Arrival"
-              type="natural"
-              fill="#3b82f6"
-              fillOpacity={0.4}
-              stroke="var(--color-Arrival)"
-              stackId="a"
-            />
-            <Area
-              dataKey="Departure"
-              type="natural"
-              fill="var(--color-Departure)"
-              fillOpacity={0.4}
-              stroke="var(--color-Departure)"
-              stackId="a"
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </AreaChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
 
         </div>
 
         {/* right screen*/}
         <div className="w-full sm:w-2/3 flex flex-col mt-4 sm:mt-0">
+          {/* Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex mb-4 w-full sm:w-auto text-sm sm:text-base">
+                Display: {mode === "week" ? "Semaine" : "Mois"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setMode("week")}>week</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setMode("month")}>month</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {/* Calendar */}
           {mode === "week" ? (
             <CalendarWeek
               selectedDate={date}
               onSelect={setDate}
               className="rounded-lg border w-full bg-white"
-              mode={mode}
-              onModeChange={setMode}
             />
           ) : (
             <Calendar
               selectedDate={date}
               onSelect={setDate}
               className="rounded-lg border w-full h-[680] bg-white"
-              mode={mode}
-              onModeChange={setMode}
             />
           )}
         </div>
