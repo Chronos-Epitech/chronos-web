@@ -4,6 +4,12 @@ import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 
 // Génère toutes les dates du mois courant
 function getMonthDates(date: Date) {
@@ -22,12 +28,16 @@ type CalendarMonthProps = {
   selectedDate?: Date
   onSelect?: (date: Date) => void
   className?: string
+  mode?: "week" | "month"
+  onModeChange?: (mode: "week" | "month") => void
 }
 
 export function Calendar({
   selectedDate,
   onSelect,
   className,
+  mode,
+  onModeChange,
 }: CalendarMonthProps) {
   const [date, setDate] = React.useState<Date>(selectedDate || new Date())
   const monthDates = getMonthDates(date)
@@ -78,9 +88,24 @@ export function Calendar({
         <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
           <ChevronLeftIcon />
         </Button>
-        <span className="font-semibold text-lg">
-          {date.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-lg">
+            {date.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+          </span>
+          {mode && onModeChange && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  {mode === "week" ? "Semaine" : "Mois"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => onModeChange("week")}>Semaine</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onModeChange("month")}>Mois</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
         <Button variant="ghost" size="icon" onClick={handleNextMonth}>
           <ChevronRightIcon />
         </Button>
