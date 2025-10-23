@@ -8,10 +8,14 @@ First, install dependencies using bun:
 bun install
 ```
 
-Then, run the development server:
+Then, run frontend and backend in separate terminals:
 
 ```bash
-bun dev
+bun --filter @chronos/api dev
+```
+
+```bash
+bun --filter @chronos/web dev
 ```
 
 ## Using Docker
@@ -22,12 +26,13 @@ To build the Docker image:
 docker build -f Dockerfile.bun -t nextjs-docker .
 ```
 
-Run your container: 
+Run your container:
+
 ```bash
 docker run -p 3000:3000 nextjs-docker
 ```
 
-You can view your images created with ``docker images``.
+You can view your images created with `docker images`.
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
