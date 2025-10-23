@@ -116,10 +116,8 @@ This project uses **Clerk** for authentication with **Supabase** integration and
 
 ### Database
 - **Database Migrations**: Located in `packages/supabase/migrations/` and include:
-  - User management with RLS policies
-  - Team and team member management
-  - Role-based access control
-  - Invitation system
+  - Full database remote schema
+  - RLS policies migrations
 
 ## Learn More
 
