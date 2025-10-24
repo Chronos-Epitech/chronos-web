@@ -1,0 +1,17 @@
+{
+  "name": "@chronos/data",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "files": ["src"],
+  "license": "UNLICENSED",
+  "dependencies": {
+    "zod": "^4.1.12",
+    "@chronos/types": "workspace:*",
+    "@chronos/supabase": "workspace:*"
+  }
+}
+
+
+
