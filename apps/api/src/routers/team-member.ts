@@ -24,7 +24,7 @@ export const teamMemberRouter = router({
     .output(TeamMembersResponse)
     .query(({ ctx, input }) =>
       teamMembers.listTeamMembers(
-        { role: ctx.role, accessToken: ctx.accessToken },
+        { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
         input.team_id
       )
     ),
@@ -43,7 +43,7 @@ export const teamMemberRouter = router({
     .output(TeamMember)
     .mutation(({ ctx, input }) =>
       teamMembers.addTeamMember(
-        { role: ctx.role, accessToken: ctx.accessToken },
+        { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
         input
       )
     ),
@@ -62,7 +62,7 @@ export const teamMemberRouter = router({
     .output(TeamMember)
     .mutation(({ ctx, input }) =>
       teamMembers.removeTeamMember(
-        { role: ctx.role, accessToken: ctx.accessToken },
+        { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
         input
       )
     ),
