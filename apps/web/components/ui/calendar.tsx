@@ -1,16 +1,17 @@
-"use client"
 
+"use client"
+import { useState } from "react"
 import * as React from "react"
-import { useState } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
+
 
 // Génère toutes les dates du mois courant
 function getMonthDates(date: Date) {
@@ -26,12 +27,13 @@ function getMonthDates(date: Date) {
 }
 
 type CalendarMonthProps = {
-  selectedDate?: Date;
-  onSelect?: (date: Date) => void;
-  className?: string;
-  mode?: "week" | "month";
-  onModeChange?: (mode: "week" | "month") => void;
+  selectedDate?: Date
+  onSelect?: (date: Date) => void
+  className?: string
+  mode?: "week" | "month"
+  onModeChange?: (mode: "week" | "month") => void
 }
+
 
 export function Calendar({
   selectedDate,
