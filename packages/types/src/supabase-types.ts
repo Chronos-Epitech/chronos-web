@@ -16,21 +16,21 @@ export type Database = {
     Tables: {
       schedules: {
         Row: {
-          arrival: string
-          departure: string
+          created_at: string
           id: string
+          type: Database["public"]["Enums"]["schedule_type"]
           user_id: string
         }
         Insert: {
-          arrival?: string
-          departure?: string
+          created_at?: string
           id?: string
+          type: Database["public"]["Enums"]["schedule_type"]
           user_id?: string
         }
         Update: {
-          arrival?: string
-          departure?: string
+          created_at?: string
           id?: string
+          type?: Database["public"]["Enums"]["schedule_type"]
           user_id?: string
         }
         Relationships: [
@@ -144,6 +144,7 @@ export type Database = {
     }
     Enums: {
       role: "admin" | "manager" | "member"
+      schedule_type: "check_in" | "check_out"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -272,6 +273,7 @@ export const Constants = {
   public: {
     Enums: {
       role: ["admin", "manager", "member"],
+      schedule_type: ["check_in", "check_out"],
     },
   },
 } as const

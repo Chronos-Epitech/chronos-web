@@ -26,7 +26,7 @@ This project is structured as a monorepo with the following components:
 
 ## Getting Started
 
-First, install dependencies using bun:
+First, install dependencies using [bun](https://bun.sh):
 
 ```bash
 bun install
