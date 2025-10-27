@@ -1,1 +1,0 @@
-export const logoPath = "/images/Copilot_20251014_102800.png";

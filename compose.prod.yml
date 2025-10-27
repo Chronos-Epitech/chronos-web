@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.bun
+      target: runner
+    container_name: chronos-app
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    expose:
+      - "3000"
+    networks:
+      - chronos
+    restart: unless-stopped
+
+  proxy:
+    image: nginx:1.27-alpine
+    container_name: chronos-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - app
+    networks:
+      - chronos
+    restart: unless-stopped
+
+networks:
+  chronos:
+    driver: bridge
