@@ -1,4 +1,3 @@
-<<<<<<< HEAD:app/manager-dashboard/page.tsx
 import { HeaderTitle } from "@/components/ui/header-title";
 import {ProfileCard} from "@/components/ui/profile-card";
 import { Separator } from "@/components/ui/separator";
@@ -52,19 +51,6 @@ export default function Home() {
       </div>
       <div className="h-full"> </div>
       </div>
-=======
-import { ProfileCard } from "@/components/ui/profile-card";
-
-export default function ManagerDashboard() {
-  return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <ProfileCard
-        avatar="/path/to/image.jpg"
-        avatarFallback="U"
-        firstName="User Name"
-        lastName="User Last Name"
-      />
->>>>>>> bd7eec6778115a578d0b8e5131598b6ab74588da:apps/web/app/manager-dashboard/page.tsx
     </div>
   );
 }
