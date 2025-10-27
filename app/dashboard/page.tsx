@@ -4,10 +4,10 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/squared-avatar";
+import { SignedIn, UserButton, UserProfile } from "@clerk/nextjs";
 import {
    Card, 
    CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle, } from "@/components/ui/card";
@@ -67,6 +67,7 @@ const chartConfig = {
 export default function Dashboard() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [mode, setMode] = React.useState<"week" | "month">("week");
+  const [showUserProfile, setShowUserProfile] = React.useState(false);
 
   return (
     <div className="relative min-h-screen w-full">
@@ -80,18 +81,16 @@ export default function Dashboard() {
             <p className="text-xs sm:text-sm font-medium">Manage your time like a pro</p>
           </div>
         </div>
-        <Link href="/">
-          <Button variant="ghost" className="cursor-pointer text-sm sm:text-base">
-            HomePage
-          </Button>
-        </Link>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
       </div>
 
       {/* Content */}
       <div className="pt-24 flex flex-col gap-4 sm:flex-row sm:gap-8 px-4 sm:px-8 sm:h-full">
 
         {/* left screen */}
-        <div className="flex flex-col gap-4 sm:gap-4 w-full sm:w-1/3">
+        <div className="flex flex-col gap-4 sm:gap-2 w-full sm:w-1/3">
 
           {/* User Card */}
           <Card className="flex flex-col gap-2 p-4 relative">
@@ -99,7 +98,11 @@ export default function Dashboard() {
               <Label className="text-sm sm:text-base">Last Name:</Label>
               <Label className="text-sm sm:text-base">First Name:</Label>
               <div className="flex justify-start mt-2">
-                <Button variant="secondary" className="w-auto px-4 py-2 text-sm sm:text-base mt-3">
+                <Button 
+                  variant="secondary" 
+                  className="w-auto px-4 py-2 text-sm sm:text-base mt-3"
+                  onClick={() => setShowUserProfile(true)}
+                >
                   Changes
                 </Button>
               </div>
@@ -113,7 +116,7 @@ export default function Dashboard() {
           {/* Card Schedules */}
           <Card className="flex flex-row sm:flex-row items-center justify-center gap-2 sm:gap-6 p-4">
             <Button
-              variant="secondary"
+              variant="outline"
               className="flex-1 min-w-[80px] max-w-[200px] h-32 px-4 py-2"
               onClick={() => {
                 const now = new Date();
@@ -131,7 +134,7 @@ export default function Dashboard() {
             </Button>
             <div className="sm:flex items-center text-lg font-medium">-</div>
             <Button
-              variant="secondary"
+              variant="outline"
               className="flex-1 min-w-[80px] max-w-[200px] h-32 px-4 py-2"
               onClick={() => {
                 const now = new Date();
@@ -235,6 +238,59 @@ export default function Dashboard() {
         </div>
 
       </div>
+
+      {/* UserProfile Modal avec effet de flou qui épouse la forme */}
+      {showUserProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop avec effet de flou adaptatif */}
+          <div 
+            className="absolute inset-0 bg-black/20 backdrop-blur-md"
+            onClick={() => setShowUserProfile(false)}
+          />
+          
+          {/* UserProfile de Clerk avec forme arrondie */}
+          <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl">
+            <UserProfile 
+              routing="hash"
+              appearance={{
+                elements: {
+                  rootBox: "w-full h-full rounded-2xl",
+                  card: "shadow-none border-0 rounded-2xl overflow-hidden bg-white",
+                  modalContent: "p-0 m-0 rounded-2xl",
+                  modalHeader: "p-0 m-0 rounded-t-2xl",
+                  modalBody: "p-0 m-0",
+                  modalFooter: "p-0 m-0 rounded-b-2xl",
+                  navbar: "rounded-t-2xl",
+                  navbarButton: "hover:bg-gray-100 rounded-md",
+                  headerTitle: "text-xl font-semibold",
+                  headerSubtitle: "text-gray-600",
+                  profileSectionTitle: "text-lg font-medium",
+                  formFieldLabel: "text-sm font-medium text-gray-700",
+                  formFieldInput: "border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                  formButtonPrimary: "bg-blue-600 hover:bg-blue-700 text-white rounded-lg",
+                  formButtonSecondary: "bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg",
+                  footerActionLink: "text-blue-600 hover:text-blue-700",
+                  identityPreviewText: "text-gray-600",
+                  identityPreviewEditButton: "text-blue-600 hover:text-blue-700",
+                  badge: "bg-blue-100 text-blue-800 rounded-full",
+                  avatarBox: "w-16 h-16",
+                  avatarImage: "w-full h-full object-cover rounded-full",
+                  formFieldSuccessText: "text-green-600",
+                  formFieldErrorText: "text-red-600",
+                  alertText: "text-red-600",
+                  formResendCodeLink: "text-blue-600 hover:text-blue-700",
+                  otpCodeFieldInput: "border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500",
+                  phoneInputBox: "border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500",
+                  countrySelect: "border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500",
+                  selectButton: "border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500",
+                  selectOption: "hover:bg-gray-100",
+                  modalCloseButton: "text-gray-400 hover:text-gray-600"
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
