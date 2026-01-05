@@ -1,9 +1,27 @@
 import { z } from "zod";
-import { router, adminProcedure } from "../trpc";
+import { router, adminProcedure, protectedProcedure } from "../trpc";
 import { CreateUserInput, UpdateUserInput, UserId } from "@chronos/types";
+import { User as ClerkUser } from "@clerk/backend";
 import { users } from "@chronos/data";
 
 export const userRouter = router({
+  me: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/users/me",
+        summary: "Get current user",
+        description: "Returns the currently authenticated Clerk user",
+      },
+    })
+    .output(z.custom<ClerkUser>())
+    .query(({ ctx }) =>
+      users.getUserById(
+        { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
+        ctx.auth.userId!
+      )
+    ),
+
   getAll: adminProcedure
     .meta({
       openapi: {
