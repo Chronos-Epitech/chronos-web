@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import { useUser } from "@clerk/nextjs";
 
 import { cn } from "@/lib/utils";
 
@@ -13,7 +14,7 @@ function Avatar({
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        "relative flex aspect-square size-8 sm:size-10 ring-2 ring-border/60 shrink-0 overflow-hidden rounded-full",
         className,
       )}
       {...props}
@@ -23,13 +24,18 @@ function Avatar({
 
 function AvatarImage({
   className,
+  src: srcProp,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+  const { isLoaded, user } = useUser();
+  const src = srcProp ?? (isLoaded ? user?.imageUrl : undefined);
+
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
-      className={cn("aspect-square size-full", className)}
+      className={cn("h-full w-full object-cover", className)}
       {...props}
+      src={src}
     />
   );
 }

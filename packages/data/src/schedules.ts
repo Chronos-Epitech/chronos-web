@@ -10,6 +10,28 @@ import { assertManager } from "./roles";
 import { createServerSupabaseClient } from "@chronos/supabase";
 import { TRPCError } from "@trpc/server";
 
+async function getLastScheduleForUser(
+  ctx: DataCtx,
+  userId: string,
+): Promise<{ type: "check_in" | "check_out"; created_at: string } | null> {
+  const supabase = createServerSupabaseClient(ctx.accessToken);
+  const { data, error } = await supabase
+    .from("schedules")
+    .select("type, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to fetch last schedule: " + error.message,
+    });
+  }
+  return data ?? null;
+}
+
 export async function listSchedules(ctx: DataCtx) {
   assertManager(ctx.role);
 
@@ -165,6 +187,14 @@ export async function checkIn(
     });
   }
 
+  const last = await getLastScheduleForUser(ctx, targetUserId);
+  if (last?.type === "check_in") {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Already checked in. You must check out first.",
+    });
+  }
+
   const { data, error } = await supabase
     .from("schedules")
     .insert({
@@ -200,6 +230,20 @@ export async function checkOut(
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Unauthorized: Cannot check out other users",
+    });
+  }
+
+  const last = await getLastScheduleForUser(ctx, targetUserId);
+  if (!last) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "No check-in found. You must check in first.",
+    });
+  }
+  if (last.type === "check_out") {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Already checked out. You must check in first.",
     });
   }
 

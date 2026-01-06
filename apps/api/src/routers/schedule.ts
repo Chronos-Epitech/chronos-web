@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import {
   router,
   adminProcedure,
@@ -79,6 +80,31 @@ export const scheduleRouter = router({
         input.userId,
       ),
     ),
+
+  getMe: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/schedules/me",
+        summary: "Get my schedules",
+        description: "Get schedules for the authenticated user",
+      },
+    })
+    .output(z.array(z.any()))
+    .query(({ ctx }) => {
+      const userId = ctx.auth?.userId;
+      if (!userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+      return schedules.getSchedulesByUserId(
+        {
+          auth: ctx.auth,
+          role: ctx.role,
+          accessToken: ctx.accessToken,
+        },
+        userId,
+      );
+    }),
 
   create: managerProcedure
     .meta({
