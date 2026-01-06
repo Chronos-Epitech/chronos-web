@@ -9,7 +9,7 @@ import { Database } from "@chronos/types/src/supabase-types";
 
 const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
+  process.env.SUPABASE_KEY!,
 );
 
 export const userRouter = router({
@@ -28,7 +28,7 @@ export const userRouter = router({
         auth: ctx.auth,
         role: ctx.role,
         accessToken: ctx.accessToken,
-      })
+      }),
     ),
 
   get: adminProcedure
@@ -45,8 +45,8 @@ export const userRouter = router({
     .query(({ ctx, input }) =>
       users.getUserById(
         { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input.id
-      )
+        input.id,
+      ),
     ),
 
   create: adminProcedure
@@ -63,8 +63,8 @@ export const userRouter = router({
     .mutation(({ ctx, input }) =>
       users.createUser(
         { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input
-      )
+        input,
+      ),
     ),
 
   update: adminProcedure
@@ -81,8 +81,8 @@ export const userRouter = router({
     .mutation(({ ctx, input }) =>
       users.updateUser(
         { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input
-      )
+        input,
+      ),
     ),
 
   delete: adminProcedure
@@ -99,26 +99,24 @@ export const userRouter = router({
     .mutation(({ ctx, input }) =>
       users.deleteUser(
         { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input.id
-      )
+        input.id,
+      ),
     ),
 
-  me: protectedProcedure
-    .output(z.any().nullable())
-    .query(async ({ ctx }) => {
-      const userId = ctx.auth?.userId;
-      if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+  me: protectedProcedure.output(z.any().nullable()).query(async ({ ctx }) => {
+    const userId = ctx.auth?.userId;
+    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
 
-      const { data, error } = await supabaseAdmin
-        .from("users")
-        .select("id, first_name, last_name, email, avatar_url, role")
-        .eq("id", userId)
-        .maybeSingle();
+    const { data, error } = await supabaseAdmin
+      .from("users")
+      .select("id, first_name, last_name, email, avatar_url, role")
+      .eq("id", userId)
+      .maybeSingle();
 
-      if (error) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: error.message });
-      }
+    if (error) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: error.message });
+    }
 
-      return data;
-    }),
+    return data;
+  }),
 });

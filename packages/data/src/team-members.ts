@@ -11,7 +11,7 @@ import { createServerSupabaseClient } from "@chronos/supabase";
 
 export async function listTeamMembers(
   ctx: DataCtx,
-  input: z.infer<typeof TeamId>
+  input: z.infer<typeof TeamId>,
 ) {
   const supabase = createServerSupabaseClient(ctx.accessToken);
 
@@ -117,7 +117,7 @@ export async function listTeamMembers(
 
 export async function addTeamMember(
   ctx: DataCtx,
-  input: z.infer<typeof AddTeamMemberInput>
+  input: z.infer<typeof AddTeamMemberInput>,
 ) {
   assertManager(ctx.role);
   const supabase = createServerSupabaseClient(ctx.accessToken);
@@ -205,7 +205,7 @@ export async function addTeamMember(
 
 export async function removeTeamMember(
   ctx: DataCtx,
-  input: z.infer<typeof RemoveTeamMemberInput>
+  input: z.infer<typeof RemoveTeamMemberInput>,
 ) {
   assertManager(ctx.role);
   const supabase = createServerSupabaseClient(ctx.accessToken);

@@ -10,6 +10,6 @@ export function createNextServerSupabaseClient() {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       accessToken: async () => (await auth()).getToken(),
-    }
+    },
   );
 }

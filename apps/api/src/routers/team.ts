@@ -25,7 +25,7 @@ export const teamRouter = router({
         auth: ctx.auth,
         role: ctx.role,
         accessToken: ctx.accessToken,
-      })
+      }),
     ),
 
   get: protectedProcedure
@@ -43,8 +43,8 @@ export const teamRouter = router({
     .query(({ ctx, input }) =>
       teams.getTeamById(
         { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input.id
-      )
+        input.id,
+      ),
     ),
 
   create: adminProcedure
@@ -61,8 +61,8 @@ export const teamRouter = router({
     .mutation(({ ctx, input }) =>
       teams.createTeam(
         { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input
-      )
+        input,
+      ),
     ),
 
   update: managerProcedure
@@ -80,8 +80,8 @@ export const teamRouter = router({
     .mutation(({ ctx, input }) =>
       teams.updateTeam(
         { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input
-      )
+        input,
+      ),
     ),
 
   delete: adminProcedure
@@ -98,7 +98,7 @@ export const teamRouter = router({
     .mutation(({ ctx, input }) =>
       teams.deleteTeam(
         { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input.id
-      )
+        input.id,
+      ),
     ),
 });

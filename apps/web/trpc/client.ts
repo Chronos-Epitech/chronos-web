@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { getApiUrl } from "@/lib/utils";
 
 export function createBrowserTrpcClient(
-  getToken: () => Promise<string | null>
+  getToken: () => Promise<string | null>,
 ) {
   return createTRPCProxyClient<AppRouter>({
     links: [

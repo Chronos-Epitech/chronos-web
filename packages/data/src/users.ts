@@ -32,7 +32,7 @@ export async function getUserById(ctx: DataCtx, userId: string) {
 
 export async function createUser(
   ctx: DataCtx,
-  input: z.infer<typeof CreateUserInput>
+  input: z.infer<typeof CreateUserInput>,
 ) {
   assertAdmin(ctx.role);
 
@@ -55,7 +55,7 @@ export async function createUser(
 
 export async function updateUser(
   ctx: DataCtx,
-  input: z.infer<typeof UpdateUserInput>
+  input: z.infer<typeof UpdateUserInput>,
 ) {
   assertAdmin(ctx.role);
 

@@ -4,13 +4,12 @@
   "private": true,
   "type": "module",
   "main": "src/index.ts",
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "license": "UNLICENSED",
   "dependencies": {
     "@supabase/supabase-js": "^2.74.0",
     "@chronos/types": "workspace:*"
   }
 }
-
-
-
