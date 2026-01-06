@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, adminProcedure, protectedProcedure } from "../trpc";
 import { CreateUserInput, UpdateUserInput, UserId } from "@chronos/types";
+import { User as ClerkUser } from "@clerk/backend";
 import { users } from "@chronos/data";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "@chronos/types/src/supabase-types";
@@ -12,6 +13,23 @@ const supabaseAdmin = createClient<Database>(
 );
 
 export const userRouter = router({
+  me: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/users/me",
+        summary: "Get current user",
+        description: "Returns the currently authenticated Clerk user",
+      },
+    })
+    .output(z.custom<ClerkUser>())
+    .query(({ ctx }) =>
+      users.getUserById(
+        { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
+        ctx.auth.userId!
+      )
+    ),
+
   getAll: adminProcedure
     .meta({
       openapi: {

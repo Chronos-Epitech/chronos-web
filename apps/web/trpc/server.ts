@@ -3,10 +3,7 @@ import "server-only";
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "@chronos/api/src/routers";
 import { auth } from "@clerk/nextjs/server";
-
-function getApiUrl() {
-  return process.env.API_URL ?? "http://localhost:3001/trpc"; // points to @chronos/api
-}
+import { getApiUrl } from "@/lib/utils";
 
 export const trpc = createTRPCProxyClient<AppRouter>({
   links: [
