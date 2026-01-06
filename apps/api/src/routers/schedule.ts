@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import {
   router,
   adminProcedure,
@@ -33,7 +32,7 @@ export const scheduleRouter = router({
         auth: ctx.auth,
         role: ctx.role,
         accessToken: ctx.accessToken,
-      })
+      }),
     ),
 
   get: adminProcedure
@@ -54,8 +53,8 @@ export const scheduleRouter = router({
           role: ctx.role,
           accessToken: ctx.accessToken,
         },
-        input.id
-      )
+        input.id,
+      ),
     ),
 
   getByUserId: protectedProcedure
@@ -77,8 +76,8 @@ export const scheduleRouter = router({
           role: ctx.role,
           accessToken: ctx.accessToken,
         },
-        input.userId
-      )
+        input.userId,
+      ),
     ),
 
   create: managerProcedure
@@ -100,8 +99,8 @@ export const scheduleRouter = router({
           role: ctx.role,
           accessToken: ctx.accessToken,
         },
-        input
-      )
+        input,
+      ),
     ),
 
   update: managerProcedure
@@ -123,8 +122,8 @@ export const scheduleRouter = router({
           role: ctx.role,
           accessToken: ctx.accessToken,
         },
-        input
-      )
+        input,
+      ),
     ),
 
   delete: managerProcedure
@@ -146,8 +145,8 @@ export const scheduleRouter = router({
           role: ctx.role,
           accessToken: ctx.accessToken,
         },
-        input.id
-      )
+        input.id,
+      ),
     ),
 
   // Check-in and Check-out methods for members
@@ -170,8 +169,8 @@ export const scheduleRouter = router({
           role: ctx.role,
           accessToken: ctx.accessToken,
         },
-        input
-      )
+        input,
+      ),
     ),
 
   checkOut: protectedProcedure
@@ -193,8 +192,7 @@ export const scheduleRouter = router({
           role: ctx.role,
           accessToken: ctx.accessToken,
         },
-        input
-      )
+        input,
+      ),
     ),
-    
 });

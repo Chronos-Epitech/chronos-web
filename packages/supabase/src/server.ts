@@ -8,6 +8,6 @@ export function createServerSupabaseClient(accessToken?: string | null) {
     {
       // Use passed accessToken (API). Next.js should use the Next-only helper instead.
       accessToken: async () => accessToken ?? null,
-    }
+    },
   );
 }

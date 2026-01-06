@@ -10,8 +10,10 @@ export function getApiUrl() {
    * In the browser, Next.js only exposes env vars prefixed with NEXT_PUBLIC_.
    * On the server, we can still use API_URL.
    */
-  return (
-    process.env.NEXT_PUBLIC_API_URL ??
-    "http://localhost:3001/trpc"
-  ); // points to @chronos/api
+  return process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/trpc"; // points to @chronos/api
+}
+
+// Convert time to minutes from midnight
+export function timeToMinutes(date: Date): number {
+  return date.getHours() * 60 + date.getMinutes();
 }

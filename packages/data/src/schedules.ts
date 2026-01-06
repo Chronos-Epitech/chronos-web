@@ -70,7 +70,7 @@ export async function getSchedulesByUserId(ctx: DataCtx, userId: string) {
 
 export async function createSchedule(
   ctx: DataCtx,
-  input: z.infer<typeof CreateScheduleInput>
+  input: z.infer<typeof CreateScheduleInput>,
 ) {
   assertManager(ctx.role);
 
@@ -96,7 +96,7 @@ export async function createSchedule(
 
 export async function updateSchedule(
   ctx: DataCtx,
-  input: z.infer<typeof UpdateScheduleInput>
+  input: z.infer<typeof UpdateScheduleInput>,
 ) {
   assertManager(ctx.role);
 
@@ -147,7 +147,7 @@ export async function deleteSchedule(ctx: DataCtx, scheduleId: string) {
 // Check-in and Check-out methods for members
 export async function checkIn(
   ctx: DataCtx,
-  input: z.infer<typeof CheckInInput>
+  input: z.infer<typeof CheckInInput>,
 ) {
   const supabase = createServerSupabaseClient(ctx.accessToken);
 
@@ -185,7 +185,7 @@ export async function checkIn(
 
 export async function checkOut(
   ctx: DataCtx,
-  input: z.infer<typeof CheckOutInput>
+  input: z.infer<typeof CheckOutInput>,
 ) {
   const supabase = createServerSupabaseClient(ctx.accessToken);
 

@@ -56,6 +56,6 @@ export const invitationRouter = router({
     .input(z.object({ invitation_id: z.string() }))
     .output(InvitationSchema)
     .mutation(({ ctx, input }) =>
-      invitations.revokeInvitation(ctx.role, input.invitation_id)
+      invitations.revokeInvitation(ctx.role, input.invitation_id),
     ),
 });

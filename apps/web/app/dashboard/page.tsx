@@ -3,7 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { Team } from "@chronos/types";
 import DashboardClient from "@/components/ui/dashboard-client";
-import { auth } from "@clerk/nextjs/server";
 
 export default async function Page() {
   let teams: z.infer<typeof Team>[] = [];
@@ -12,7 +11,6 @@ export default async function Page() {
   // Récupération du profil utilisateur depuis Supabase
   try {
     userProfile = await trpc.user.me.query();
-    console.log("User profile récupéré:", userProfile);
   } catch (error) {
     if (error instanceof TRPCError) {
       if (error.code === "UNAUTHORIZED") {
@@ -20,7 +18,10 @@ export default async function Page() {
       } else if (error.code === "FORBIDDEN") {
         console.error("Accès interdit");
       } else {
-        console.error("Erreur lors de la récupération du profil:", error.message);
+        console.error(
+          "Erreur lors de la récupération du profil:",
+          error.message,
+        );
       }
     } else {
       console.error("Erreur inattendue:", error);

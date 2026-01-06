@@ -105,17 +105,20 @@ docker-compose -f compose.prod.yml up
 This project uses **Clerk** for authentication with **Supabase** integration and implements comprehensive role-based access control:
 
 ### Authentication
+
 - **Clerk Authentication**: Handles user sign-in, sign-up, and session management
 - **Supabase Integration**: Clerk's JWT tokens are used to authenticate requests to Supabase
 - **Row Level Security (RLS)**: Database policies are based on the user's Clerk access token
 
 ### Authorization Middleware
+
 - **tRPC Middleware**: Role-based procedures (`protectedProcedure`, `managerProcedure`, `adminProcedure`)
 - **Next.js Middleware**: Route-level protection with Clerk integration
 - **Single Source of Truth**: Consistent role checking across frontend and backend
 - **Role Hierarchy**: Admin > Manager > Member with appropriate access levels
 
 ### Database
+
 - **Database Migrations**: Located in `packages/supabase/migrations/` and include:
   - Full database remote schema
   - RLS policies migrations
