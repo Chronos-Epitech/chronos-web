@@ -1,7 +1,15 @@
 import { z } from "zod";
-import { router, adminProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { router, adminProcedure, protectedProcedure } from "../trpc";
 import { CreateUserInput, UpdateUserInput, UserId } from "@chronos/types";
 import { users } from "@chronos/data";
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "@chronos/types/src/supabase-types";
+
+const supabaseAdmin = createClient<Database>(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
 
 export const userRouter = router({
   getAll: adminProcedure
@@ -93,4 +101,23 @@ export const userRouter = router({
         input.id
       )
     ),
+
+  me: protectedProcedure
+    .output(z.any().nullable())
+    .query(async ({ ctx }) => {
+      const userId = ctx.auth?.userId;
+      if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+      const { data, error } = await supabaseAdmin
+        .from("users")
+        .select("id, first_name, last_name, email, avatar_url, role")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (error) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: error.message });
+      }
+
+      return data;
+    }),
 });

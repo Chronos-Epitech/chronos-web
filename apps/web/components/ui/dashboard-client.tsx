@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { z } from "zod";
-import type { Team } from "@chronos/types";
+import type { Tables, Team } from "@chronos/types";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/squared-avatar";
-import { SignedIn, UserButton, UserProfile } from "@clerk/nextjs";
+import { SignedIn, UserButton, UserProfile, useUser } from "@clerk/nextjs";
 import {
   Card,
   CardContent,
@@ -32,8 +31,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { trpc } from "@/trpc/server";
 
-// =================== DÉBUT CONFIG CHART ===================
+// =================== CONFIG CHART ===================
 const chartDataWeek = [
   { day: "Lun", Departure: 186, Arrival: 80 },
   { day: "Mar", Departure: 305, Arrival: 200 },
@@ -65,10 +65,72 @@ const chartConfig = {
 } satisfies ChartConfig;
 // =================== FIN CONFIG CHART ===================
 
-export default function DashboardClient({ teams }: { teams: z.infer<typeof Team>[] }) {
+export default function DashboardClient({
+  teams,
+  userProfile,
+}: {
+  teams: z.infer<typeof Team>[];
+  userProfile: Tables<"users"> | null;
+}) {
+  const { user } = useUser();
+  const userId = user?.id;
+
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [mode, setMode] = React.useState<"week" | "month">("week");
   const [showUserProfile, setShowUserProfile] = React.useState(false);
+
+  // Récupération des données utilisateur depuis Supabase
+  const firstName = userProfile?.first_name ?? "Prénom";
+  const lastName = userProfile?.last_name ?? "Nom";
+  const avatarUrl = userProfile?.avatar_url ?? "/id.png";
+  const role = userProfile?.role ?? "member";
+  const teamName = teams?.[0]?.name ?? "Aucune équipe";
+
+  const initials =
+    (firstName?.[0] ?? "").toUpperCase() + (lastName?.[0] ?? "").toUpperCase();
+
+  // ============================
+  // ARRIVAL (checkIn)
+  // ============================
+  const handleArrival = async () => {
+    if (!userId) return;
+  
+    const now = new Date();
+  
+    await trpc.schedule.checkIn.mutate({
+      user_id: userId, // <-- EXACTEMENT comme checkOut
+    });
+  
+    toast("Arrival saved at:", {
+      description: now.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    });
+  };
+  
+
+  // ============================
+  // DEPARTURE (checkOut)
+  // ============================
+  const handleDeparture = async () => {
+    if (!userId) return;
+
+    const now = new Date();
+
+    await trpc.schedule.checkOut.mutate({
+      user_id: userId,
+    });
+
+    toast("Departure saved at:", {
+      description: now.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    });
+  };
 
   return (
     <div className="relative min-h-screen w-full">
@@ -96,49 +158,43 @@ export default function DashboardClient({ teams }: { teams: z.infer<typeof Team>
           {/* User Card */}
           <Card className="flex flex-col gap-2 p-4 relative">
             <div className="flex flex-col gap-1">
-              <Label className="text-sm sm:text-base">Last Name:    </Label>
-              <Label className="text-sm sm:text-base">First Name:</Label>
+              <Label className="text-sm sm:text-base font-semibold">Nom: {lastName}</Label>
+              <Label className="text-sm sm:text-base font-semibold">Prénom: {firstName}</Label>
+
+              <Label className="text-xs sm:text-sm text-gray-500 mt-1">
+                Rôle: {role === "admin" ? "Administrateur" : role === "manager" ? "Manager" : "Membre"}
+              </Label>
+
+              <Label className="text-xs sm:text-sm text-gray-500">
+                Équipe : {teamName}
+              </Label>
+
               <div className="flex justify-start mt-2">
                 <Button
                   variant="secondary"
                   className="w-auto px-4 py-2 text-sm sm:text-base mt-3"
                   onClick={() => setShowUserProfile(true)}
                 >
-                  Changes
+                  Modifier
                 </Button>
               </div>
             </div>
+
             <Avatar className="h-full w-1/4 sm:w-1/4 absolute right-0 bottom-0">
-              <AvatarImage src="id.png" alt="User Avatar" className="object-cover" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage src={avatarUrl} alt={`Avatar de ${firstName} ${lastName}`} className="object-cover" />
+              <AvatarFallback>{initials || "??"}</AvatarFallback>
             </Avatar>
           </Card>
 
           {/* Card Schedules */}
           <Card className="flex flex-row items-center justify-center gap-6 p-4">
-            <Button
-              variant="outline"
-              className="flex-1 h-32"
-              onClick={() => {
-                const now = new Date();
-                toast("Arrival saved at:", {
-                  description: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-                });
-              }}
-            >
+            <Button variant="outline" className="flex-1 h-32" onClick={handleArrival}>
               ARRIVAL
             </Button>
+
             <div className="text-lg font-medium">-</div>
-            <Button
-              variant="outline"
-              className="flex-1 h-32"
-              onClick={() => {
-                const now = new Date();
-                toast("Departure saved at:", {
-                  description: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-                });
-              }}
-            >
+
+            <Button variant="outline" className="flex-1 h-32" onClick={handleDeparture}>
               DEPARTURE
             </Button>
           </Card>
@@ -198,17 +254,6 @@ export default function DashboardClient({ teams }: { teams: z.infer<typeof Team>
               </ChartContainer>
             </CardContent>
           </Card>
-
-          {/* Teams (données backend) */}
-          {teams.length > 0 && (
-            <div className="flex flex-col gap-2 mt-4">
-              {teams.map((team) => (
-                <Card key={team.id} className="p-4">
-                  <p className="font-semibold">{team.name}</p>
-                </Card>
-              ))}
-            </div>
-          )}
 
         </div>
 

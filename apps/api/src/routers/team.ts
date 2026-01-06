@@ -9,7 +9,8 @@ import { CreateTeamInput, UpdateTeamInput, TeamId, Team } from "@chronos/types";
 import { teams } from "@chronos/data";
 
 export const teamRouter = router({
-  getAll: adminProcedure
+  // Allow any authenticated user to fetch teams (was admin only)
+  getAll: protectedProcedure
     .meta({
       openapi: {
         method: "GET",
