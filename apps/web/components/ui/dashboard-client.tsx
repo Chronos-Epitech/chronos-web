@@ -1,5 +1,6 @@
 "use client";
-
+import { useTrpcClient } from "@/trpc/client";
+import { useEffect, useState } from "react";
 import * as React from "react";
 import { z } from "zod";
 import type { Tables, Team } from "@chronos/types";
@@ -29,10 +30,10 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { trpc } from "@/trpc/server";
+} 
 
+from "@/components/ui/chart";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 // =================== CONFIG CHART ===================
 const chartDataWeek = [
   { day: "Lun", Departure: 186, Arrival: 80 },
@@ -74,10 +75,11 @@ export default function DashboardClient({
 }) {
   const { user } = useUser();
   const userId = user?.id;
-
+  const trpc = useTrpcClient();
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [mode, setMode] = React.useState<"week" | "month">("week");
   const [showUserProfile, setShowUserProfile] = React.useState(false);
+  
 
   // Récupération des données utilisateur depuis Supabase
   const firstName = userProfile?.first_name ?? "Prénom";
