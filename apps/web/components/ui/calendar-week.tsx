@@ -4,6 +4,12 @@ import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 
 function getWeekDates(date: Date) {
   const day = date.getDay() === 0 ? 6 : date.getDay() - 1
@@ -24,12 +30,16 @@ type CalendarWeekProps = {
   selectedDate?: Date
   onSelect?: (date: Date) => void
   className?: string
+  mode?: "week" | "month"
+  onModeChange?: (mode: "week" | "month") => void
 }
 
 export function CalendarWeek({
   selectedDate,
   onSelect,
   className,
+  mode,
+  onModeChange,
 }: CalendarWeekProps) {
   const [date, setDate] = React.useState<Date>(selectedDate || new Date())
   const weekDates = getWeekDates(date)
@@ -58,9 +68,24 @@ export function CalendarWeek({
         <Button variant="ghost" size="icon" onClick={handlePrevWeek}>
           <ChevronLeftIcon />
         </Button>
-        <span className="font-semibold text-lg">
-        {weekDates[0].toLocaleDateString("fr-FR")}  - {weekDates[6].toLocaleDateString("fr-FR")}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-lg">
+            {weekDates[0].toLocaleDateString("fr-FR")}  - {weekDates[6].toLocaleDateString("fr-FR")}
+          </span>
+          {mode && onModeChange && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  {mode === "week" ? "Semaine" : "Mois"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => onModeChange("week")}>Semaine</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onModeChange("month")}>Mois</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
         <Button variant="ghost" size="icon" onClick={handleNextWeek}>
           <ChevronRightIcon />
         </Button>
