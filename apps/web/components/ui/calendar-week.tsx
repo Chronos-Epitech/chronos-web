@@ -24,7 +24,8 @@ function getWeekDates(date: Date) {
   return week;
 }
 
-const hours = Array.from({ length: 11 }, (_, i) => 8 + i); // 8h à 18h
+// 11 lignes = 8h → 18h
+const hours = Array.from({ length: 11 }, (_, i) => 8 + i);
 
 type CalendarWeekProps = {
   selectedDate?: Date;
@@ -68,15 +69,18 @@ export function CalendarWeek({
         className,
       )}
     >
+      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <Button variant="ghost" size="icon" onClick={handlePrevWeek}>
           <ChevronLeftIcon />
         </Button>
+
         <div className="flex items-center gap-3">
           <span className="font-semibold text-lg">
             {weekDates[0].toLocaleDateString("fr-FR")} -{" "}
             {weekDates[6].toLocaleDateString("fr-FR")}
           </span>
+
           {mode && onModeChange && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -95,27 +99,45 @@ export function CalendarWeek({
             </DropdownMenu>
           )}
         </div>
+
         <Button variant="ghost" size="icon" onClick={handleNextWeek}>
           <ChevronRightIcon />
         </Button>
       </div>
-      {/* Grille emploi du temps */}
+
+      {/* Grille */}
       <div className="grid grid-cols-8 gap-6">
         {/* Colonne heures */}
         <div className="flex flex-col sm:items-end">
           <div className="h-11" />
-          {hours.map((h) => (
-            <span
-              key={h}
-              className={cn(
-                "text-[0.8rem] text-end text-muted-foreground border-b last:border-b-0 w-[25%] sm:w-16 h-[50px]",
-                ![8, 12, 15, 18].includes(h) && "opacity-20",
-              )}
-            >
-              {h}:00
-            </span>
-          ))}
+
+          {hours.map((h, index) => {
+            // Placement exact des labels
+            const label =
+              index === 0
+                ? "8h"
+                : index === 4
+                  ? "12h"
+                  : index === 6
+                    ? "14h"
+                    : index === 10
+                      ? "18h"
+                      : "";
+
+            return (
+              <span
+                key={h}
+                className={cn(
+                  "text-[0.8rem] text-end text-muted-foreground border-b last:border-b-0 w-[25%] sm:w-16 h-[50px]",
+                  label === "" && "opacity-20",
+                )}
+              >
+                {label}
+              </span>
+            );
+          })}
         </div>
+
         {/* Colonnes des jours */}
         {weekDates.map((d, idx) => (
           <div key={idx} className="flex flex-col items-center h-full">
@@ -132,7 +154,8 @@ export function CalendarWeek({
               </span>
               <span className="text-lg">{d.getDate()}</span>
             </Button>
-            {/* Cases horaires (vides ou à remplir selon besoin) */}
+
+            {/* Cases horaires */}
             <div className="flex flex-col w-full">
               {hours.map((h) => (
                 <div

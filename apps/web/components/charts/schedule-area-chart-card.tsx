@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { Tables } from "@chronos/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +52,12 @@ export function ScheduleAreaChartCard({
   onModeChange: (mode: "week" | "month") => void;
   selectedDate?: Date;
 }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const chartDataWeek = useMemo(() => {
     const dayNames = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
     const base = dayNames.map((day) => ({ day, Departure: 0, Arrival: 0 }));
@@ -139,21 +145,27 @@ export function ScheduleAreaChartCard({
           <CardTitle>
             Charts - {mode === "week" ? "Selected Week" : "Last Months"}
           </CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs">
-                {mode === "week" ? "Semaine" : "Mois"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => onModeChange("week")}>
-                Semaine
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onModeChange("month")}>
-                Mois
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {mounted ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  {mode === "week" ? "Semaine" : "Mois"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => onModeChange("week")}>
+                  Semaine
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onModeChange("month")}>
+                  Mois
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="outline" size="sm" className="text-xs" disabled>
+              {mode === "week" ? "Semaine" : "Mois"}
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
