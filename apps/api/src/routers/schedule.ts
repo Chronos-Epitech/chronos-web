@@ -36,51 +36,7 @@ export const scheduleRouter = router({
       }),
     ),
 
-  get: adminProcedure
-    .meta({
-      openapi: {
-        method: "GET",
-        path: "/schedules/{id}",
-        summary: "Get a schedule by id",
-        description: "Only admins can access this endpoint",
-      },
-    })
-    .input(z.object({ id: ScheduleId }))
-    .output(z.any().nullable())
-    .query(({ ctx, input }) =>
-      schedules.getScheduleById(
-        {
-          auth: ctx.auth,
-          role: ctx.role,
-          accessToken: ctx.accessToken,
-        },
-        input.id,
-      ),
-    ),
-
-  getByUserId: protectedProcedure
-    .meta({
-      openapi: {
-        method: "GET",
-        path: "/schedules/user/{userId}",
-        summary: "Get schedules by user id",
-        description:
-          "Users can access their own schedules, managers can access team member schedules",
-      },
-    })
-    .input(z.object({ userId: UserId }))
-    .output(z.array(z.any()))
-    .query(({ ctx, input }) =>
-      schedules.getSchedulesByUserId(
-        {
-          auth: ctx.auth,
-          role: ctx.role,
-          accessToken: ctx.accessToken,
-        },
-        input.userId,
-      ),
-    ),
-
+  // Specific routes must come before parametric routes for OpenAPI routing
   getMe: protectedProcedure
     .meta({
       openapi: {
@@ -105,6 +61,98 @@ export const scheduleRouter = router({
         userId,
       );
     }),
+
+  getByUserId: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/schedules/user/{userId}",
+        summary: "Get schedules by user id",
+        description:
+          "Users can access their own schedules, managers can access team member schedules",
+      },
+    })
+    .input(z.object({ userId: UserId }))
+    .output(z.array(z.any()))
+    .query(({ ctx, input }) =>
+      schedules.getSchedulesByUserId(
+        {
+          auth: ctx.auth,
+          role: ctx.role,
+          accessToken: ctx.accessToken,
+        },
+        input.userId,
+      ),
+    ),
+
+  get: adminProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/schedules/{id}",
+        summary: "Get a schedule by id",
+        description: "Only admins can access this endpoint",
+      },
+    })
+    .input(z.object({ id: ScheduleId }))
+    .output(z.any().nullable())
+    .query(({ ctx, input }) =>
+      schedules.getScheduleById(
+        {
+          auth: ctx.auth,
+          role: ctx.role,
+          accessToken: ctx.accessToken,
+        },
+        input.id,
+      ),
+    ),
+
+  // Check-in and Check-out methods for members (specific routes before parametric)
+  checkIn: protectedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/schedules/check-in",
+        summary: "Check in",
+        description:
+          "Users can check themselves in, managers can check team members in",
+      },
+    })
+    .input(CheckInInput)
+    .output(z.any())
+    .mutation(({ ctx, input }) =>
+      schedules.checkIn(
+        {
+          auth: ctx.auth,
+          role: ctx.role,
+          accessToken: ctx.accessToken,
+        },
+        input,
+      ),
+    ),
+
+  checkOut: protectedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/schedules/check-out",
+        summary: "Check out",
+        description:
+          "Users can check themselves out, managers can check team members out",
+      },
+    })
+    .input(CheckOutInput)
+    .output(z.any())
+    .mutation(({ ctx, input }) =>
+      schedules.checkOut(
+        {
+          auth: ctx.auth,
+          role: ctx.role,
+          accessToken: ctx.accessToken,
+        },
+        input,
+      ),
+    ),
 
   create: managerProcedure
     .meta({
@@ -172,53 +220,6 @@ export const scheduleRouter = router({
           accessToken: ctx.accessToken,
         },
         input.id,
-      ),
-    ),
-
-  // Check-in and Check-out methods for members
-  checkIn: protectedProcedure
-    .meta({
-      openapi: {
-        method: "POST",
-        path: "/schedules/check-in",
-        summary: "Check in",
-        description:
-          "Users can check themselves in, managers can check team members in",
-      },
-    })
-    .input(CheckInInput)
-    .output(z.any())
-    .mutation(({ ctx, input }) =>
-      schedules.checkIn(
-        {
-          auth: ctx.auth,
-          role: ctx.role,
-          accessToken: ctx.accessToken,
-        },
-        input,
-      ),
-    ),
-
-  checkOut: protectedProcedure
-    .meta({
-      openapi: {
-        method: "POST",
-        path: "/schedules/check-out",
-        summary: "Check out",
-        description:
-          "Users can check themselves out, managers can check team members out",
-      },
-    })
-    .input(CheckOutInput)
-    .output(z.any())
-    .mutation(({ ctx, input }) =>
-      schedules.checkOut(
-        {
-          auth: ctx.auth,
-          role: ctx.role,
-          accessToken: ctx.accessToken,
-        },
-        input,
       ),
     ),
 });
