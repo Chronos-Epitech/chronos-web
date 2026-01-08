@@ -20,7 +20,10 @@ export default async function Page() {
       } else if (error.code === "FORBIDDEN") {
         console.error("Accès interdit");
       } else {
-        console.error("Erreur lors de la récupération du profil:", error.message);
+        console.error(
+          "Erreur lors de la récupération du profil:",
+          error.message,
+        );
       }
     } else {
       console.error("Erreur inattendue:", error);

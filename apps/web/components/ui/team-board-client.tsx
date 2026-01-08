@@ -50,7 +50,8 @@ export default function TeamBoardClient({
               key={member.id}
               avatar={member.avatarUrl || "/path/to/image.jpg"}
               avatarFallback={
-                `${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`.toUpperCase() || "U"
+                `${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`.toUpperCase() ||
+                "U"
               }
               firstName={member.firstName || "User"}
               lastName={member.lastName || "Name"}
@@ -62,4 +63,3 @@ export default function TeamBoardClient({
     </div>
   );
 }
-

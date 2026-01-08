@@ -12,7 +12,7 @@ export default async function Page() {
     role: string;
     avatarUrl: string | null;
   }> = [];
-  
+
   // Récupération du profil utilisateur depuis Supabase
   let userProfile: Tables<"users"> | null = null;
   try {
@@ -25,7 +25,10 @@ export default async function Page() {
       } else if (error.code === "FORBIDDEN") {
         console.error("Accès interdit");
       } else {
-        console.error("Erreur lors de la récupération du profil:", error.message);
+        console.error(
+          "Erreur lors de la récupération du profil:",
+          error.message,
+        );
       }
     } else {
       console.error("Erreur inattendue:", error);
@@ -49,7 +52,9 @@ export default async function Page() {
   // Récupération des membres de l'équipe
   if (teamId) {
     try {
-      const membersData = await trpc.teamMember.getAll.query({ team_id: teamId });
+      const membersData = await trpc.teamMember.getAll.query({
+        team_id: teamId,
+      });
       if (membersData) {
         // Inclure le manager dans la liste des membres
         const allMembers = [
@@ -81,5 +86,7 @@ export default async function Page() {
     }
   }
 
-  return <TeamBoardClient teamMembers={teamMembers} userProfile={userProfile} />;
+  return (
+    <TeamBoardClient teamMembers={teamMembers} userProfile={userProfile} />
+  );
 }
