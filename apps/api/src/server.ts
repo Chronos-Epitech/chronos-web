@@ -42,6 +42,11 @@ server.register(fastifyTRPCOpenApiPlugin, {
   createContext,
 });
 
+// Health check endpoint
+server.get("/health", async () => {
+  return { status: "ok" };
+});
+
 // Serve OpenAPI spec and Swagger UI
 server.get("/openapi.json", async () => openApiDocument);
 

@@ -31,6 +31,9 @@
     },
     "check": {
       "dependsOn": ["format:check"]
+    },
+    "test:api": {
+      "cache": false
     }
   }
 }

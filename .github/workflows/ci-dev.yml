@@ -1,0 +1,60 @@
+name: CI (dev)
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  api-tests:
+    name: API tests (StepCI)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # API runtime env (required by the API for some routes used in StepCI)
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+
+      # Used by `bun run test:api` (passes as StepCI secret via `-s`)
+      AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Start API (Turbo)
+        run: |
+          nohup bun run start -- --filter=@chronos/api > api.log 2>&1 &
+          echo $! > api.pid
+
+      - name: Wait for API health check
+        run: |
+          for i in {1..60}; do
+            if curl -fsS "http://localhost:3001/health" >/dev/null; then
+              echo "API is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API failed to start"
+          exit 1
+
+      - name: Run API tests
+        run: bun run test:api
+
+      - name: API logs (on failure)
+        if: failure()
+        run: |
+          echo "---- api.log ----"
+          test -f api.log && cat api.log || echo "api.log not found"
