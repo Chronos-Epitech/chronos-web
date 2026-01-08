@@ -1,4 +1,4 @@
-name: CI (dev)
+name: CI
 
 on:
   push:
@@ -8,6 +8,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  build:
+    name: Build Frontend and Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build with Turbo
+        run: bun run build
+
   api-tests:
     name: API tests (StepCI)
     runs-on: ubuntu-latest
