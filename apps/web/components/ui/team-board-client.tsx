@@ -3,7 +3,6 @@
 import { HeaderTitle } from "@/components/ui/header-title";
 import { ProfileCard } from "@/components/ui/profile-card-mini";
 import { Separator } from "@/components/ui/separator";
-import type { Tables } from "@chronos/types";
 
 const teamTitle = "Team Members";
 const logTitle = "Log Entries";
@@ -19,13 +18,9 @@ interface TeamMember {
 
 interface TeamBoardClientProps {
   teamMembers: TeamMember[];
-  userProfile: Tables<"users"> | null;
 }
 
-export default function TeamBoardClient({
-  teamMembers,
-  userProfile,
-}: TeamBoardClientProps) {
+export default function TeamBoardClient({ teamMembers }: TeamBoardClientProps) {
   return (
     <div className="flex flex-row h-full">
       <div className="flex flex-col h-full w-1/3 min-w-[300px] p-4">
@@ -50,7 +45,8 @@ export default function TeamBoardClient({
               key={member.id}
               avatar={member.avatarUrl || "/path/to/image.jpg"}
               avatarFallback={
-                `${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`.toUpperCase() || "U"
+                `${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`.toUpperCase() ||
+                "U"
               }
               firstName={member.firstName || "User"}
               lastName={member.lastName || "Name"}
@@ -62,4 +58,3 @@ export default function TeamBoardClient({
     </div>
   );
 }
-

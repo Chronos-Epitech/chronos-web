@@ -12,6 +12,12 @@ jobs:
     name: Build Frontend and Backend
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      HUSKY: 0
+      TURBO_TELEMETRY_DISABLED: 1
+      NEXT_TELEMETRY_DISABLED: 1
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
       - name: Checkout
@@ -23,7 +29,7 @@ jobs:
           bun-version-file: package.json
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Build with Turbo
         run: bun run build
@@ -34,6 +40,8 @@ jobs:
     timeout-minutes: 15
 
     env:
+      HUSKY: 0
+      TURBO_TELEMETRY_DISABLED: 1
       # API runtime env (required by the API for some routes used in StepCI)
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -52,7 +60,7 @@ jobs:
           bun-version-file: package.json
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Start API (Turbo)
         run: |

@@ -3,7 +3,8 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { Team } from "@chronos/types";
 import DashboardClient from "@/components/ui/dashboard-manager";
-import { auth } from "@clerk/nextjs/server";
+
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
   let teams: z.infer<typeof Team>[] = [];
@@ -20,7 +21,10 @@ export default async function Page() {
       } else if (error.code === "FORBIDDEN") {
         console.error("Accès interdit");
       } else {
-        console.error("Erreur lors de la récupération du profil:", error.message);
+        console.error(
+          "Erreur lors de la récupération du profil:",
+          error.message,
+        );
       }
     } else {
       console.error("Erreur inattendue:", error);

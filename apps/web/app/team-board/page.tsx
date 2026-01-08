@@ -1,7 +1,8 @@
 import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
-import type { Tables } from "@chronos/types";
 import TeamBoardClient from "@/components/ui/team-board-client";
+
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
   let teamMembers: Array<{
@@ -12,25 +13,6 @@ export default async function Page() {
     role: string;
     avatarUrl: string | null;
   }> = [];
-  
-  // Récupération du profil utilisateur depuis Supabase
-  let userProfile: Tables<"users"> | null = null;
-  try {
-    userProfile = await trpc.user.me.query();
-    console.log("User profile récupéré:", userProfile);
-  } catch (error) {
-    if (error instanceof TRPCError) {
-      if (error.code === "UNAUTHORIZED") {
-        console.error("Utilisateur non authentifié");
-      } else if (error.code === "FORBIDDEN") {
-        console.error("Accès interdit");
-      } else {
-        console.error("Erreur lors de la récupération du profil:", error.message);
-      }
-    } else {
-      console.error("Erreur inattendue:", error);
-    }
-  }
 
   // Récupération de l'équipe de l'utilisateur
   let teamId: string | null = null;
@@ -42,14 +24,17 @@ export default async function Page() {
     if (error instanceof TRPCError && error.code === "FORBIDDEN") {
       console.error("Accès interdit pour les équipes");
     } else {
-      console.error("Erreur lors de la récupération des équipes:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("Erreur lors de la récupération des équipes:", message);
     }
   }
 
   // Récupération des membres de l'équipe
   if (teamId) {
     try {
-      const membersData = await trpc.teamMember.getAll.query({ team_id: teamId });
+      const membersData = await trpc.teamMember.getAll.query({
+        team_id: teamId,
+      });
       if (membersData) {
         // Inclure le manager dans la liste des membres
         const allMembers = [
@@ -76,10 +61,11 @@ export default async function Page() {
       if (error instanceof TRPCError && error.code === "FORBIDDEN") {
         console.error("Accès interdit pour les membres d'équipe");
       } else {
-        console.error("Erreur lors de la récupération des membres:", error);
+        const message = error instanceof Error ? error.message : String(error);
+        console.error("Erreur lors de la récupération des membres:", message);
       }
     }
   }
 
-  return <TeamBoardClient teamMembers={teamMembers} userProfile={userProfile} />;
+  return <TeamBoardClient teamMembers={teamMembers} />;
 }

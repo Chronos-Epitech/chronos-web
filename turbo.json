@@ -1,6 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "globalEnv": [
+    "CLERK_SECRET_KEY",
+    "CLERK_PUBLISHABLE_KEY",
+    "SUPABASE_URL",
+    "SUPABASE_KEY"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

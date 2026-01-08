@@ -7,6 +7,8 @@ import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
 import type { Tables } from "@chronos/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function ManagerLayout({
   children,
 }: Readonly<{
@@ -17,7 +19,6 @@ export default async function ManagerLayout({
   // Récupération du profil utilisateur depuis Supabase
   try {
     userProfile = await trpc.user.me.query();
-    console.log("User profile récupéré:", userProfile);
   } catch (error) {
     if (error instanceof TRPCError) {
       if (error.code === "UNAUTHORIZED") {
@@ -25,10 +26,14 @@ export default async function ManagerLayout({
       } else if (error.code === "FORBIDDEN") {
         console.error("Accès interdit");
       } else {
-        console.error("Erreur lors de la récupération du profil:", error.message);
+        console.error(
+          "Erreur lors de la récupération du profil:",
+          error.message,
+        );
       }
     } else {
-      console.error("Erreur inattendue:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("Erreur inattendue:", message);
     }
   }
 
