@@ -22,6 +22,7 @@ This project is structured as a monorepo with the following components:
 - **Type Safety**: Shared Zod schemas and generated Supabase types
 - **UI Components**: shadcn/ui with Tailwind CSS
 - **Package Manager**: Bun
+- **Monorepo**: Turborepo for task orchestration and caching
 - **Deployment**: Docker
 
 ## Getting Started
@@ -32,17 +33,42 @@ First, install dependencies using [bun](https://bun.sh):
 bun install
 ```
 
-Then, run the development servers:
+Then, start all development servers using Turborepo:
 
 ```bash
-# Start the API server
-bun --filter @chronos/api dev
-
-# Start the web application (in another terminal)
-bun --filter @chronos/web dev
+# Start all services (API + Web) in parallel
+bun dev
 ```
 
-The web application will be available at [http://localhost:3000](http://localhost:3000).
+This will start:
+
+- **API Server** at [http://localhost:3001](http://localhost:3001)
+- **Web Application** at [http://localhost:3000](http://localhost:3000)
+
+### Running Individual Services
+
+You can also run individual services using Turborepo filters:
+
+```bash
+# Start only the API server
+bunx turbo dev --filter=@chronos/api
+
+# Start only the web application
+bunx turbo dev --filter=@chronos/web
+```
+
+### Other Available Commands
+
+```bash
+# Build all packages
+bun run build
+
+# Run linting across all packages
+bun run lint
+
+# Start production servers
+bun run start
+```
 
 ## API Documentation
 
@@ -133,10 +159,22 @@ bun run generate:types
 
 This command uses the Supabase CLI to generate TypeScript types directly from your database schema and saves them to `packages/types/src/supabase-types.ts`.
 
+## Turborepo
+
+This project uses [Turborepo](https://turbo.build/) for monorepo task orchestration. Turborepo provides:
+
+- **Parallel Execution**: Runs tasks across workspaces in parallel
+- **Intelligent Caching**: Skips tasks that haven't changed
+- **Task Dependencies**: Automatically handles build order based on workspace dependencies
+- **Graceful Shutdown**: Handles Ctrl+C gracefully for all services
+
+The Turborepo configuration is in `turbo.json`. All tasks respect workspace dependencies and run in the correct order.
+
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [tRPC Documentation](https://trpc.io/docs)
+- [Turborepo Documentation](https://turbo.build/repo/docs)
 - [tRPC OpenAPI Extension](https://github.com/mcampa/trpc-to-openapi)
 - [Fastify Documentation](https://www.fastify.io/docs/latest/)
 - [Clerk Documentation](https://clerk.com/docs)
