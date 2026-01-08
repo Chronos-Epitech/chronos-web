@@ -1,0 +1,15 @@
+**/node_modules/**
+**/.next/**
+**/out/**
+**/build/**
+**/dist/**
+**/.turbo/**
+**/.cache/**
+**/coverage/**
+**/*.tsbuildinfo
+**/package.json
+
+
+# generated
+packages/types/src/supabase-types.ts
+

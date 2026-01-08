@@ -5,7 +5,9 @@
   "private": true,
   "type": "module",
   "main": "src/index.ts",
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "license": "UNLICENSED",
   "dependencies": {
     "zod": "^4.1.12"
