@@ -10,6 +10,28 @@ import { assertManager } from "./roles";
 import { createServerSupabaseClient } from "@chronos/supabase";
 import { TRPCError } from "@trpc/server";
 
+async function getLastScheduleForUser(
+  ctx: DataCtx,
+  userId: string,
+): Promise<{ type: "check_in" | "check_out"; created_at: string } | null> {
+  const supabase = createServerSupabaseClient(ctx.accessToken);
+  const { data, error } = await supabase
+    .from("schedules")
+    .select("type, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to fetch last schedule: " + error.message,
+    });
+  }
+  return data ?? null;
+}
+
 export async function listSchedules(ctx: DataCtx) {
   assertManager(ctx.role);
 
@@ -70,7 +92,7 @@ export async function getSchedulesByUserId(ctx: DataCtx, userId: string) {
 
 export async function createSchedule(
   ctx: DataCtx,
-  input: z.infer<typeof CreateScheduleInput>
+  input: z.infer<typeof CreateScheduleInput>,
 ) {
   assertManager(ctx.role);
 
@@ -96,7 +118,7 @@ export async function createSchedule(
 
 export async function updateSchedule(
   ctx: DataCtx,
-  input: z.infer<typeof UpdateScheduleInput>
+  input: z.infer<typeof UpdateScheduleInput>,
 ) {
   assertManager(ctx.role);
 
@@ -147,7 +169,7 @@ export async function deleteSchedule(ctx: DataCtx, scheduleId: string) {
 // Check-in and Check-out methods for members
 export async function checkIn(
   ctx: DataCtx,
-  input: z.infer<typeof CheckInInput>
+  input: z.infer<typeof CheckInInput>,
 ) {
   const supabase = createServerSupabaseClient(ctx.accessToken);
 
@@ -162,6 +184,14 @@ export async function checkIn(
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Unauthorized: Cannot check in other users",
+    });
+  }
+
+  const last = await getLastScheduleForUser(ctx, targetUserId);
+  if (last?.type === "check_in") {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Already checked in. You must check out first.",
     });
   }
 
@@ -185,7 +215,7 @@ export async function checkIn(
 
 export async function checkOut(
   ctx: DataCtx,
-  input: z.infer<typeof CheckOutInput>
+  input: z.infer<typeof CheckOutInput>,
 ) {
   const supabase = createServerSupabaseClient(ctx.accessToken);
 
@@ -200,6 +230,20 @@ export async function checkOut(
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Unauthorized: Cannot check out other users",
+    });
+  }
+
+  const last = await getLastScheduleForUser(ctx, targetUserId);
+  if (!last) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "No check-in found. You must check in first.",
+    });
+  }
+  if (last.type === "check_out") {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Already checked out. You must check in first.",
     });
   }
 

@@ -13,7 +13,7 @@ import { appRouter, type AppRouter } from "./routers";
 import { openApiDocument } from "./openapi";
 import { createContext } from "./context";
 
-const server = fastify();
+const server = fastify({ logger: true });
 
 // Clerk: parse Authorization bearer and expose req.auth
 server.register(clerkPlugin);
@@ -58,6 +58,8 @@ const port = Number(process.env.PORT ?? 3001);
 const host = process.env.HOST ?? "0.0.0.0";
 
 server.listen({ port, host }).catch((err) => {
+  // Ensure we always see startup failures, even if logger output is misconfigured.
+  console.error(err);
   server.log.error(err);
   process.exit(1);
 });

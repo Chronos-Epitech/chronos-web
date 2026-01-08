@@ -40,7 +40,7 @@ export async function getTeamById(ctx: DataCtx, input: z.infer<typeof TeamId>) {
 
 export async function createTeam(
   ctx: DataCtx,
-  input: z.infer<typeof CreateTeamInput>
+  input: z.infer<typeof CreateTeamInput>,
 ) {
   assertAdmin(ctx.role);
   const supabase = createServerSupabaseClient(ctx.accessToken);
@@ -106,7 +106,7 @@ export async function createTeam(
       input.memberIds.map((memberId) => ({
         team_id: data.id,
         user_id: memberId,
-      }))
+      })),
     );
     if (memberErrors) {
       throw new TRPCError({
@@ -120,7 +120,7 @@ export async function createTeam(
 
 export async function updateTeam(
   ctx: DataCtx,
-  input: z.infer<typeof UpdateTeamInput>
+  input: z.infer<typeof UpdateTeamInput>,
 ) {
   assertManager(ctx.role);
   const supabase = createServerSupabaseClient(ctx.accessToken);

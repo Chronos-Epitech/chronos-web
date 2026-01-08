@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { cn } from "@chronos/web/lib/utils";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { SignedIn, UserButton } from "@clerk/nextjs";
 
@@ -76,7 +76,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card"
       className={cn(
         "w-1/3 max-w-64 h-auto py-2 items-center justify-center bg-card text-card-foreground flex flex-wrap rounded-xl border shadow-sm place-content-center",
-        className
+        className,
       )}
       {...props}
     />
@@ -89,7 +89,7 @@ function CardAvatar({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card-avatar"
       className={cn(
         "p-2 w-full h-1/3 sm:w-1/3 sm:h-full content-center flex items-center justify-center",
-        className
+        className,
       )}
       {...props}
     />

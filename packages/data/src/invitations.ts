@@ -18,7 +18,7 @@ export async function listInvitations(role: Role) {
 
 export async function sendInvitation(
   role: Role,
-  input: z.infer<typeof SendInvitationInput>
+  input: z.infer<typeof SendInvitationInput>,
 ) {
   assertAdmin(role);
   try {
