@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, adminProcedure } from "../trpc";
+import { router, adminProcedure } from "../trpc.js";
 import { SendInvitationInput } from "@chronos/types";
 import { invitations } from "@chronos/data";
 

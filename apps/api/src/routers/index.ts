@@ -1,9 +1,9 @@
-import { router } from "../trpc";
-import { teamRouter } from "./team";
-import { teamMemberRouter } from "./team-member";
-import { invitationRouter } from "./invitation";
-import { userRouter } from "./user";
-import { scheduleRouter } from "./schedule";
+import { router } from "../trpc.js";
+import { teamRouter } from "./team.js";
+import { teamMemberRouter } from "./team-member.js";
+import { invitationRouter } from "./invitation.js";
+import { userRouter } from "./user.js";
+import { scheduleRouter } from "./schedule.js";
 
 export const appRouter = router({
   team: teamRouter,

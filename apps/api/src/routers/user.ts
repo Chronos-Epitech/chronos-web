@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { router, adminProcedure, protectedProcedure } from "../trpc";
+import { router, adminProcedure, protectedProcedure } from "../trpc.js";
 import { CreateUserInput, UpdateUserInput, UserId } from "@chronos/types";
 import { User as ClerkUser } from "@clerk/backend";
 import { users } from "@chronos/data";

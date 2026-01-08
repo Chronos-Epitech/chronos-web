@@ -5,7 +5,7 @@ import {
   adminProcedure,
   protectedProcedure,
   managerProcedure,
-} from "../trpc";
+} from "../trpc.js";
 import {
   CreateScheduleInput,
   UpdateScheduleInput,

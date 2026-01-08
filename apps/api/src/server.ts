@@ -10,8 +10,8 @@ import {
 } from "@trpc/server/adapters/fastify";
 import { fastifyTRPCOpenApiPlugin } from "trpc-to-openapi";
 import { appRouter, type AppRouter } from "./routers/index.js";
-import { openApiDocument } from "./openapi";
-import { createContext } from "./context";
+import { openApiDocument } from "./openapi.js";
+import { createContext } from "./context.js";
 
 const server = fastify({ logger: true });
 

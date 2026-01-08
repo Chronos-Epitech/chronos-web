@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, managerProcedure, protectedProcedure } from "../trpc";
+import { router, managerProcedure, protectedProcedure } from "../trpc.js";
 import {
   TeamMember,
   TeamMembersResponse,
