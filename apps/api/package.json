@@ -10,6 +10,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "bun --hot src/server.ts",
+    "build": "bunx tsc --noEmit",
     "start": "bun src/server.ts"
   },
   "dependencies": {
