@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { router, adminProcedure, protectedProcedure } from "../trpc.js";
+import { router, adminProcedure, protectedProcedure } from "../trpc";
 import {
   CreateUserInput,
   UpdateUserInput,

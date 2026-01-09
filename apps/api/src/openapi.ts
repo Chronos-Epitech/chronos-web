@@ -1,5 +1,5 @@
 import { generateOpenApiDocument } from "trpc-to-openapi";
-import { appRouter } from "./routers/index.js";
+import { appRouter } from "./routers/index";
 import {
   TeamId,
   CreateTeamInput,

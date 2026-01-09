@@ -4,7 +4,7 @@ import {
   managerProcedure,
   adminProcedure,
   protectedProcedure,
-} from "../trpc.js";
+} from "../trpc";
 import { CreateTeamInput, UpdateTeamInput, TeamId, Team } from "@chronos/types";
 import { teams } from "@chronos/data";
 
