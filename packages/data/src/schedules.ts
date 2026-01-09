@@ -176,6 +176,13 @@ export async function checkIn(
   // Allow users to check themselves in, or managers/admins to check others in
   const targetUserId = input.user_id || ctx.auth.userId;
 
+  if (!targetUserId) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "User ID not found",
+    });
+  }
+
   if (
     ctx.role !== "admin" &&
     ctx.role !== "manager" &&
@@ -221,6 +228,13 @@ export async function checkOut(
 
   // Allow users to check themselves out, or managers/admins to check others out
   const targetUserId = input.user_id || ctx.auth.userId;
+
+  if (!targetUserId) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "User ID not found",
+    });
+  }
 
   if (
     ctx.role !== "admin" &&
