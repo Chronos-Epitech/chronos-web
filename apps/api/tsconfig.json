@@ -7,7 +7,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["@chronos/types"],
     "paths": {
       "@chronos/*": ["../../packages/*/src"]
     },
