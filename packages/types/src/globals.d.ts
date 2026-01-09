@@ -1,16 +1,4 @@
-export {};
-
-// Shared roles across apps
-import type { Constants } from "./supabase-types";
-import type { AuthObject } from "@clerk/types";
-
-export type Role = (typeof Constants.public.Enums.role)[number];
-
-export type DataCtx = {
-  auth: AuthObject;
-  role: Role;
-  accessToken: string | null;
-};
+import type { Role } from "./types";
 
 declare global {
   interface CustomJwtSessionClaims {
