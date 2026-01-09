@@ -64,7 +64,6 @@ server.get("/", async (request, reply) => {
 // });
 
 const port = Number(process.env.PORT ?? 3001);
-const host = process.env.HOST ?? "0.0.0.0";
 
 // // Graceful shutdown handler
 // const gracefulShutdown = async (signal: string) => {
@@ -85,7 +84,7 @@ const host = process.env.HOST ?? "0.0.0.0";
 // process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 // process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-server.listen({ port, host }).catch((err) => {
+server.listen({ port }).catch((err) => {
   // Ensure we always see startup failures, even if logger output is misconfigured.
   console.error(err);
   server.log.error(err);
