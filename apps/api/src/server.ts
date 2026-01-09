@@ -19,8 +19,8 @@ server.get("/", async () => {
   return { hello: "world" };
 });
 
-// // Clerk: parse Authorization bearer and expose req.auth
-// server.register(clerkPlugin);
+// Clerk: parse Authorization bearer and expose req.auth
+server.register(clerkPlugin);
 
 // server.register(fastifyTRPCPlugin, {
 //   prefix: "/trpc",
