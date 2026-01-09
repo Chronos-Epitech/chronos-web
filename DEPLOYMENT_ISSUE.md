@@ -8,6 +8,16 @@ Deploy succeeds, but every request returns **500** at runtime:
 Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/var/task/apps/api/src/routers/index' imported from /var/task/apps/api/src/server.js
 ```
 
+## Symptom (variant): Clerk import crashes on Vercel
+
+If you add Clerk and get:
+
+```
+SyntaxError: The requested module '@clerk/fastify' does not provide an export named 'clerkPlugin'
+```
+
+This usually means **the Vercel build/runtime pipeline is treating `@clerk/fastify` as CommonJS during execution**, so ESM named imports can fail even though the package supports ESM.
+
 ## What this error actually means (the online “why”)
 
 This is a **Node.js ESM module resolution** issue, not a compile error:

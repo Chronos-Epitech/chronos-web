@@ -22,19 +22,19 @@ server.get("/", async () => {
 // Clerk: parse Authorization bearer and expose req.auth
 server.register(clerkPlugin);
 
-// server.register(fastifyTRPCPlugin, {
-//   prefix: "/trpc",
-//   routerOptions: {
-//     maxParamLength: 5000,
-//   },
-//   trpcOptions: {
-//     router: appRouter,
-//     createContext,
-//     onError({ path, error }) {
-//       console.error(`Error in tRPC handler on path '${path}':`, error.message);
-//     },
-//   } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
-// });
+server.register(fastifyTRPCPlugin, {
+  prefix: "/trpc",
+  routerOptions: {
+    maxParamLength: 5000,
+  },
+  trpcOptions: {
+    router: appRouter,
+    createContext,
+    onError({ path, error }) {
+      console.error(`Error in tRPC handler on path '${path}':`, error.message);
+    },
+  } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
+});
 
 // Enable CORS globally
 server.register(cors, {
@@ -42,48 +42,48 @@ server.register(cors, {
   credentials: true,
 });
 
-// // OpenAPI REST routes via trpc-to-openapi
-// server.register(fastifyTRPCOpenApiPlugin, {
-//   basePath: "/api",
-//   router: appRouter,
-//   createContext,
-// });
+// OpenAPI REST routes via trpc-to-openapi
+server.register(fastifyTRPCOpenApiPlugin, {
+  basePath: "/api",
+  router: appRouter,
+  createContext,
+});
 
-// // Health check endpoint
-// server.get("/health", async () => {
-//   return { status: "ok" };
-// });
+// Health check endpoint
+server.get("/health", async () => {
+  return { status: "ok" };
+});
 
-// // Serve OpenAPI spec and Swagger UI
-// server.get("/openapi.json", async () => openApiDocument);
+// Serve OpenAPI spec and Swagger UI
+server.get("/openapi.json", async () => openApiDocument);
 
-// server.register(fastifySwagger as any, {
-//   mode: "static",
-//   specification: { document: openApiDocument },
-// });
+server.register(fastifySwagger as any, {
+  mode: "static",
+  specification: { document: openApiDocument },
+});
 
-// server.register(fastifySwaggerUi, {
-//   routePrefix: "/docs",
-// });
+server.register(fastifySwaggerUi, {
+  routePrefix: "/docs",
+});
 
-// // Graceful shutdown handler
-// const gracefulShutdown = async (signal: string) => {
-//   server.log.info(`Received ${signal}, shutting down gracefully...`);
+// Graceful shutdown handler
+const gracefulShutdown = async (signal: string) => {
+  server.log.info(`Received ${signal}, shutting down gracefully...`);
 
-//   try {
-//     await server.close();
-//     server.log.info("Server closed successfully");
-//     process.exit(0);
-//   } catch (err) {
-//     const errorMessage = err instanceof Error ? err.message : String(err);
-//     server.log.error(`Error during shutdown: ${errorMessage}`);
-//     process.exit(1);
-//   }
-// };
+  try {
+    await server.close();
+    server.log.info("Server closed successfully");
+    process.exit(0);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    server.log.error(`Error during shutdown: ${errorMessage}`);
+    process.exit(1);
+  }
+};
 
-// // Handle termination signals
-// process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-// process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+// Handle termination signals
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 const port = Number(process.env.PORT) || 3001;
 const host = process.env.HOST || "0.0.0.0";
