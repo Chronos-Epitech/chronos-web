@@ -3,16 +3,19 @@ import { TRPCError } from "@trpc/server";
 import type { Tables } from "@chronos/types";
 import TeamBoardClient from "@/components/ui/team-board-client";
 
+// Définir le type User pour l'équipe
+type TeamUser = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  role: string;
+  avatarUrl: string | null;
+};
+
 export default async function Page() {
-  let teamMembers: Array<{
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-    role: string;
-    avatarUrl: string | null;
-  }> = [];
-  
+  let teamMembers: TeamUser[] = [];
+
   // Récupération du profil utilisateur depuis Supabase
   let userProfile: Tables<"users"> | null = null;
   try {
@@ -25,7 +28,10 @@ export default async function Page() {
       } else if (error.code === "FORBIDDEN") {
         console.error("Accès interdit");
       } else {
-        console.error("Erreur lors de la récupération du profil:", error.message);
+        console.error(
+          "Erreur lors de la récupération du profil:",
+          error.message,
+        );
       }
     } else {
       console.error("Erreur inattendue:", error);
@@ -36,7 +42,6 @@ export default async function Page() {
   let teamId: string | null = null;
   try {
     const teams = await trpc.team.getAll.query();
-    // Prendre la première équipe pour l'instant (à améliorer selon votre logique)
     teamId = teams?.[0]?.id || null;
   } catch (error) {
     if (error instanceof TRPCError && error.code === "FORBIDDEN") {
@@ -49,10 +54,12 @@ export default async function Page() {
   // Récupération des membres de l'équipe
   if (teamId) {
     try {
-      const membersData = await trpc.teamMember.getAll.query({ team_id: teamId });
+      const membersData = await trpc.teamMember.getAll.query({
+        team_id: teamId,
+      });
       if (membersData) {
         // Inclure le manager dans la liste des membres
-        const allMembers = [
+        const allMembers: TeamUser[] = [
           {
             id: membersData.manager.id,
             firstName: membersData.manager.firstName,
@@ -61,14 +68,15 @@ export default async function Page() {
             role: membersData.manager.role,
             avatarUrl: membersData.manager.avatarUrl,
           },
-          ...membersData.users.map((user) => ({
+          // Typage explicite de `user` pour éviter `any`
+          ...(membersData.users?.map((user: TeamUser) => ({
             id: user.id,
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
             role: user.role,
             avatarUrl: user.avatarUrl,
-          })),
+          })) || []),
         ];
         teamMembers = allMembers;
       }
@@ -81,5 +89,7 @@ export default async function Page() {
     }
   }
 
-  return <TeamBoardClient teamMembers={teamMembers} userProfile={userProfile} />;
+  return (
+    <TeamBoardClient teamMembers={teamMembers} userProfile={userProfile} />
+  );
 }
