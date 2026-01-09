@@ -1,21 +1,21 @@
 import "dotenv/config"; // dotenv must be imported before @clerk/fastify
 import fastify from "fastify";
-import cors from "@fastify/cors";
-import fastifySwagger from "@fastify/swagger";
-import fastifySwaggerUi from "@fastify/swagger-ui";
-import { clerkPlugin } from "@clerk/fastify";
-import {
-  fastifyTRPCPlugin,
-  FastifyTRPCPluginOptions,
-} from "@trpc/server/adapters/fastify";
-import { fastifyTRPCOpenApiPlugin } from "trpc-to-openapi";
-import { appRouter, type AppRouter } from "./routers/index";
-import { openApiDocument } from "./openapi";
-import { createContext } from "./context";
+// import cors from "@fastify/cors";
+// import fastifySwagger from "@fastify/swagger";
+// import fastifySwaggerUi from "@fastify/swagger-ui";
+// import { clerkPlugin } from "@clerk/fastify";
+// import {
+//   fastifyTRPCPlugin,
+//   FastifyTRPCPluginOptions,
+// } from "@trpc/server/adapters/fastify";
+// import { fastifyTRPCOpenApiPlugin } from "trpc-to-openapi";
+// import { appRouter, type AppRouter } from "./routers/index";
+// import { openApiDocument } from "./openapi";
+// import { createContext } from "./context";
 
 const server = fastify({ logger: true });
 
-server.get("/", async (request, reply) => {
+server.get("/", async () => {
   return { hello: "world" };
 });
 
@@ -82,11 +82,4 @@ server.get("/", async (request, reply) => {
 // process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 // process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-server.listen({ port: 3000 }).catch((err) => {
-  // Ensure we always see startup failures, even if logger output is misconfigured.
-  console.error(err);
-  server.log.error(err);
-  process.exit(1);
-});
-
-export default server;
+server.listen({ port: 3001 });
