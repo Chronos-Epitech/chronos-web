@@ -3,18 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "dist/server.js",
+  "main": "src/server.ts",
   "files": [
-    "dist"
+    "src"
   ],
   "license": "UNLICENSED",
   "scripts": {
     "dev": "bun --hot src/server.ts",
-    "build": "tsdown",
-    "start": "node dist/server.js"
-  },
-  "devDependencies": {
-    "tsdown": "^0.12.5"
+    "start": "bun src/server.ts"
   },
   "dependencies": {
     "@chronos/data": "workspace:*",

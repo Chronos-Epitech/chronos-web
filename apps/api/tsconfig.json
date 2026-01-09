@@ -7,11 +7,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "types": ["@chronos/types"],
     "paths": {
       "@chronos/*": ["../../packages/*/src"]
     },
     "baseUrl": "."
   },
-  "include": ["src/**/*.ts", "../../packages/types/src/globals.d.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
