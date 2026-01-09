@@ -19,25 +19,28 @@ server.get("/", async () => {
   return { hello: "world" };
 });
 
-// Clerk: parse Authorization bearer and expose req.auth
-server.register(clerkPlugin);
+// // Clerk: parse Authorization bearer and expose req.auth
+// server.register(clerkPlugin);
 
-server.register(fastifyTRPCPlugin, {
-  prefix: "/trpc",
-  routerOptions: {
-    maxParamLength: 5000,
-  },
-  trpcOptions: {
-    router: appRouter,
-    createContext,
-    onError({ path, error }) {
-      console.error(`Error in tRPC handler on path '${path}':`, error.message);
-    },
-  } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
+// server.register(fastifyTRPCPlugin, {
+//   prefix: "/trpc",
+//   routerOptions: {
+//     maxParamLength: 5000,
+//   },
+//   trpcOptions: {
+//     router: appRouter,
+//     createContext,
+//     onError({ path, error }) {
+//       console.error(`Error in tRPC handler on path '${path}':`, error.message);
+//     },
+//   } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
+// });
+
+// Enable CORS globally
+server.register(cors, {
+  origin: process.env.CORS_ORIGIN || true, // Allow all origins in dev, restrict in production
+  credentials: true,
 });
-
-// // Enable CORS globally
-// server.register(cors, {});
 
 // // OpenAPI REST routes via trpc-to-openapi
 // server.register(fastifyTRPCOpenApiPlugin, {
@@ -82,4 +85,13 @@ server.register(fastifyTRPCPlugin, {
 // process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 // process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-server.listen({ port: 3001 });
+const port = Number(process.env.PORT) || 3001;
+const host = process.env.HOST || "0.0.0.0";
+
+server.listen({ port, host }, (err, address) => {
+  if (err) {
+    server.log.error(err);
+    process.exit(1);
+  }
+  server.log.info(`Server listening on ${address}`);
+});
