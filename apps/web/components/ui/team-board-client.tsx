@@ -13,9 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useState } from "react";
-
-const teamTitle = "Team Members";
-const logTitle = "Log Entries";
+import { useTrpcClient } from "@/trpc/client";
 
 interface TeamMember {
   id: string;
@@ -29,16 +27,24 @@ interface TeamMember {
 interface TeamBoardClientProps {
   teamMembers: TeamMember[];
   userProfile: Tables<"users"> | null;
+  teamId: string | null; // important pour remove()
 }
 
 export default function TeamBoardClient({
   teamMembers,
   userProfile,
+  teamId,
 }: TeamBoardClientProps) {
+  const trpc = useTrpcClient();
+
+  const authorization =
+    userProfile?.role === "manager" || userProfile?.role === "admin";
+
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [showPopup, setShowPopup] = useState(false);
 
   const openPopup = (member: TeamMember) => {
+    if (!authorization) return;
     setSelectedMember(member);
     setShowPopup(true);
   };
@@ -48,26 +54,31 @@ export default function TeamBoardClient({
     setSelectedMember(null);
   };
 
+  // DELETE MEMBER
+  const handleDelete = async (member: TeamMember) => {
+    try {
+      await trpc.teamMember.remove.mutate({
+        team_id: teamId!,
+        user_id: member.id,
+      });
+      alert("Membre supprimé");
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la suppression");
+    }
+  };
+
+  // EDIT MEMBER (placeholder)
+  const handleEdit = (member: TeamMember) => {
+    console.log("Edit member:", member);
+    alert("Fonction Edit à implémenter");
+  };
+
   return (
     <div className="flex flex-row h-full relative">
-      {/* LEFT SIDEBAR */}
-      <div className="flex flex-col h-full w-1/3 min-w-[300px] p-4">
-        <HeaderTitle title={logTitle} className="w-full" />
-
-        <div className="flex-1 h-full w-full overflow-y-auto bg-card shadow rounded-xl p-4">
-          <div className="mb-2 p-2 border rounded">
-            <p className="text-sm text-muted-foreground">
-              [2024-06-01 10:00:00] User A logged in.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <Separator className="p-1" orientation="vertical" />
-
-      {/* RIGHT SIDE — FULL HEIGHT TABLE */}
-      <div className="flex flex-col h-full w-2/3 p-4">
-        <HeaderTitle title={teamTitle} className="w-full mb-4" />
+      {/* RIGHT SIDE — TABLE */}
+      <div className="flex flex-col h-full w-2/3 p-4 ml-auto">
+        <HeaderTitle title="Team Members" className="w-full mb-4" />
 
         <div className="flex-1 overflow-auto rounded-xl shadow bg-card p-4">
           <table className="w-full text-sm">
@@ -77,7 +88,9 @@ export default function TeamBoardClient({
                 <th className="py-2 px-3">Nom</th>
                 <th className="py-2 px-3">Email</th>
                 <th className="py-2 px-3">Rôle</th>
-                <th className="py-2 px-3 text-right">Actions</th>
+                {authorization && (
+                  <th className="py-2 px-3 text-right">Actions</th>
+                )}
               </tr>
             </thead>
 
@@ -85,45 +98,49 @@ export default function TeamBoardClient({
               {teamMembers.map((member) => (
                 <tr
                   key={member.id}
-                  className="border-b hover:bg-muted/30 transition cursor-pointer"
+                  className={`border-b transition ${
+                    authorization
+                      ? "hover:bg-muted/30 cursor-pointer"
+                      : "cursor-default"
+                  }`}
                   onClick={() => openPopup(member)}
                 >
-                  <td className="py-2 px-3">{member.firstName || "-"}</td>
-                  <td className="py-2 px-3">{member.lastName || "-"}</td>
-                  <td className="py-2 px-3">{member.email || "-"}</td>
+                  <td className="py-2 px-3">{member.firstName}</td>
+                  <td className="py-2 px-3">{member.lastName}</td>
+                  <td className="py-2 px-3">{member.email}</td>
                   <td className="py-2 px-3 capitalize">{member.role}</td>
 
-                  {/* ACTIONS BUTTON */}
-                  <td
-                    className="py-2 px-3 text-right"
-                    onClick={(e) => e.stopPropagation()} // empêche d'ouvrir la pop-up
-                  >
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 p-0"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
+                  {authorization && (
+                    <td
+                      className="py-2 px-3 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
 
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => console.log("Edit", member.id)}
-                        >
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-red-600"
-                          onClick={() => console.log("Delete", member.id)}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(member)}>
+                            Edit
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => handleDelete(member)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -131,8 +148,8 @@ export default function TeamBoardClient({
         </div>
       </div>
 
-      {/* CUSTOM POPUP */}
-      {showPopup && selectedMember && (
+      {/* POPUP (only for managers) */}
+      {authorization && showPopup && selectedMember && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
           onClick={closePopup}
@@ -141,7 +158,6 @@ export default function TeamBoardClient({
             className="bg-white dark:bg-neutral-900 rounded-xl shadow-xl p-6 w-[350px] relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
             <button
               className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
               onClick={closePopup}
@@ -153,9 +169,7 @@ export default function TeamBoardClient({
               {selectedMember.firstName} {selectedMember.lastName}
             </h2>
 
-            <p className="text-muted-foreground text-sm">
-              (Contenu de la pop-up à venir)
-            </p>
+            <p className="text-muted-foreground text-sm">(Contenu à venir)</p>
           </div>
         </div>
       )}

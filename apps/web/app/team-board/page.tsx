@@ -90,6 +90,10 @@ export default async function Page() {
   }
 
   return (
-    <TeamBoardClient teamMembers={teamMembers} userProfile={userProfile} />
+    <TeamBoardClient
+      teamMembers={teamMembers}
+      userProfile={userProfile}
+      teamId={teamId}
+    />
   );
 }
