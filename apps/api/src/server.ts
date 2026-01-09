@@ -63,8 +63,6 @@ server.get("/", async (request, reply) => {
 //   routePrefix: "/docs",
 // });
 
-const port = Number(process.env.PORT ?? 3001);
-
 // // Graceful shutdown handler
 // const gracefulShutdown = async (signal: string) => {
 //   server.log.info(`Received ${signal}, shutting down gracefully...`);
@@ -84,7 +82,7 @@ const port = Number(process.env.PORT ?? 3001);
 // process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 // process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-server.listen({ port }).catch((err) => {
+server.listen({ port: 3001 }).catch((err) => {
   // Ensure we always see startup failures, even if logger output is misconfigured.
   console.error(err);
   server.log.error(err);
