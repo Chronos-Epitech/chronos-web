@@ -82,7 +82,7 @@ server.get("/", async (request, reply) => {
 // process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 // process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-server.listen({ port: 3001 }).catch((err) => {
+server.listen({ port: 3000 }).catch((err) => {
   // Ensure we always see startup failures, even if logger output is misconfigured.
   console.error(err);
   server.log.error(err);
