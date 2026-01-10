@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { formatDurationSince } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
+import { ScheduleHistoryCard } from "@/components/ui/schedule-history-card";
+
 import { ScheduleAreaChartCard } from "@/components/charts/schedule-area-chart-card";
 
 export default function DashboardClient({
@@ -320,33 +322,37 @@ export default function DashboardClient({
                   </CardContent>
                 </Card>
 
-                <ScheduleAreaChartCard
-                  schedules={schedules}
-                  mode={mode}
-                  onModeChange={setMode}
-                  selectedDate={date}
-                />
+                <ScheduleHistoryCard schedules={schedules} />
               </div>
 
               {/* right screen */}
-              <div className="w-full flex flex-col lg:flex-1 min-w-0">
-                {mode === "week" ? (
-                  <CalendarWeek
-                    selectedDate={date}
-                    onSelect={setDate}
-                    className="rounded-xl border border-border/70 w-full h-full bg-card"
-                    mode={mode}
-                    onModeChange={setMode}
-                  />
-                ) : (
-                  <Calendar
-                    selectedDate={date}
-                    onSelect={setDate}
-                    className="rounded-xl border border-border/70 w-full h-[680px] bg-card"
-                    mode={mode}
-                    onModeChange={setMode}
-                  />
-                )}
+              <div className="w-2/3 flex flex-col lg:flex-1 min-w-0 gap-4">
+                {/* Calendar */}
+                <div className="flex-1 min-h-0">
+                  {mode === "week" ? (
+                    <CalendarWeek
+                      selectedDate={date}
+                      onSelect={setDate}
+                      className="rounded-xl border border-border/70 w-full h-full bg-card"
+                      mode={mode}
+                      onModeChange={setMode}
+                    />
+                  ) : (
+                    <Calendar
+                      selectedDate={date}
+                      onSelect={setDate}
+                      className="rounded-xl border border-border/70 w-full h-full bg-card"
+                      mode={mode}
+                      onModeChange={setMode}
+                    />
+                  )}
+                </div>
+
+                {/* KPI section (bas de page) */}
+                <div className="h-[170px] rounded-xl border border-border/70 bg-card">
+                  <p>taux de présence</p>
+                  {/* KPIs ici */}
+                </div>
               </div>
             </div>
           </div>
