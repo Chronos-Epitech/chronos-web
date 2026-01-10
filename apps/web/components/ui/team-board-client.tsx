@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTrpcClient } from "@/trpc/client";
 
 interface TeamMember {
@@ -45,77 +45,6 @@ export default function TeamBoardClient({
 
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [showPopup, setShowPopup] = useState(false);
-
-  const [avgHours, setAvgHours] = useState(0);
-  const [lateHours, setLateHours] = useState(0);
-  const [extraHours, setExtraHours] = useState(0);
-
-  // Load weekly schedule data
-  useEffect(() => {
-    async function load() {
-      if (!teamId || members.length === 0) return;
-
-      try {
-        const allSchedules = await Promise.all(
-          members.map(async (member) => {
-            try {
-              return await trpc.schedule.getByUserId.query({
-                userId: member.id,
-              });
-            } catch {
-              return [];
-            }
-          }),
-        );
-
-        const raw = allSchedules.flat();
-
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-        const lastWeekSchedules = raw.filter((entry: any) => {
-          const date = entry.created_at ? new Date(entry.created_at) : null;
-          return date && date >= oneWeekAgo;
-        });
-
-        let totalHours = 0;
-        let totalDays = 0;
-        let late = 0;
-        let extra = 0;
-
-        lastWeekSchedules.forEach((entry: any) => {
-          const start = entry.check_in ? new Date(entry.check_in) : null;
-          const end = entry.check_out ? new Date(entry.check_out) : null;
-
-          if (!start || !end) return;
-
-          const worked = (end.getTime() - start.getTime()) / 1000 / 3600;
-          totalHours += worked;
-          totalDays++;
-
-          const nine = new Date(start);
-          nine.setHours(9, 0, 0, 0);
-          if (start > nine) {
-            late += (start.getTime() - nine.getTime()) / 1000 / 3600;
-          }
-
-          const five = new Date(end);
-          five.setHours(17, 0, 0, 0);
-          if (end > five) {
-            extra += (end.getTime() - five.getTime()) / 1000 / 3600;
-          }
-        });
-
-        setAvgHours(totalDays > 0 ? totalHours / totalDays : 0);
-        setLateHours(late);
-        setExtraHours(extra);
-      } catch (error) {
-        console.error("Failed to load schedule data:", error);
-      }
-    }
-
-    load();
-  }, [teamId, members]);
 
   const openPopup = (member: TeamMember) => {
     if (!authorization) return;
@@ -152,36 +81,9 @@ export default function TeamBoardClient({
 
   return (
     <div className="flex flex-row h-full relative">
-      {/* LEFT SIDE — KPI ONLY */}
+      {/* LEFT SIDE — KPI (SUPPRIMÉ MAIS ESPACE CONSERVÉ) */}
       <div className="flex flex-col h-full w-1/3 min-w-[300px] p-4">
-        <HeaderTitle title="Team Overview" className="w-full mb-4" />
-
-        <div className="grid grid-cols-1 gap-4">
-          <div className="bg-card shadow rounded-xl p-4">
-            <h3 className="text-lg font-semibold mb-2">
-              Moyenne d'heures par jour (semaine)
-            </h3>
-            <p className="text-2xl font-bold">{avgHours.toFixed(2)} h</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-card shadow rounded-xl p-4">
-              <h3 className="text-lg font-semibold mb-2">Heures de retard</h3>
-              <p className="text-2xl font-bold text-red-600">
-                {lateHours.toFixed(2)} h
-              </p>
-            </div>
-
-            <div className="bg-card shadow rounded-xl p-4">
-              <h3 className="text-lg font-semibold mb-2">
-                Heures supplémentaires
-              </h3>
-              <p className="text-2xl font-bold text-green-600">
-                {extraHours.toFixed(2)} h
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* KPI supprimés */}
       </div>
 
       <Separator className="p-1" orientation="vertical" />
