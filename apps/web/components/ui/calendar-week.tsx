@@ -25,7 +25,7 @@ function getWeekDates(date: Date) {
 }
 
 // 11 lignes = 8h → 18h
-const hours = Array.from({ length: 11 }, (_, i) => 8 + i);
+const hours = Array.from({ length: 12 }, (_, i) => 8 + i);
 
 type CalendarWeekProps = {
   selectedDate?: Date;
@@ -128,7 +128,7 @@ export function CalendarWeek({
               <span
                 key={h}
                 className={cn(
-                  "text-[0.8rem] text-end text-muted-foreground border-b last:border-b-0 w-[25%] sm:w-16 h-[50px]",
+                  "flex items-center justify-end text-[0.8rem] text-muted-foreground border-b w-[25%] sm:w-16 h-[50px]",
                   label === "" && "opacity-20",
                 )}
               >
