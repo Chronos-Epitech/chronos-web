@@ -97,7 +97,72 @@ Bundling succeeded locally, but Vercel still executed `src/server` (seen in stac
 
 ### Attempt 2: Bun runtime on Vercel
 
-Bun runtime on Vercel is limited to certain frameworks (see `https://vercel.com/docs/functions/runtimes/bun`). Even if Bun can run the code, Vercel’s framework/build pipeline for Fastify may still run under Node and/or not route requests through Bun the way you expect.
+Bun runtime on Vercel is limited to certain frameworks (see `https://vercel.com/docs/functions/runtimes/bun`). Even if Bun can run the code, Vercel's framework/build pipeline for Fastify may still run under Node and/or not route requests through Bun the way you expect.
+
+## Community Solution (Worth Trying)
+
+Someone with the exact same error (`ERR_MODULE_NOT_FOUND` on Vercel, Fastify API, monorepo with workspace packages) fixed it by:
+
+1. **Adding CommonJS polyfills in tsup banner**:
+
+   ```typescript
+   // apps/api/tsup.config.ts
+   import { defineConfig } from "tsup";
+
+   export default defineConfig({
+     entry: ["src/index.ts"],  // your entry point
+     format: ["esm"],
+     target: "node20",
+     outDir: "dist",
+     clean: true,
+     bundle: true,
+     noExternal: [
+       // Bundle workspace packages that export .ts
+       "@chronos/types",
+       "@chronos/data",
+       "@chronos/supabase"
+     ],
+     banner: {
+       js: `import { createRequire } from 'module';
+   import { fileURLToPath } from 'url';
+   import { dirname } from 'path';
+   ```
+
+const require = createRequire(import.meta.url);
+const **filename = fileURLToPath(import.meta.url);
+const **dirname = dirname(\_\_filename);`,
+},
+});
+
+````
+
+2. **Explicit Vercel configuration**:
+```json
+// apps/api/vercel.json
+{
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist"
+}
+````
+
+3. **Updated package.json**:
+   ```json
+   {
+     "main": "dist/server.js",
+     "files": ["dist"],
+     "scripts": {
+       "build": "tsup"
+     }
+   }
+   ```
+
+**Why this approach might work:**
+
+- The `banner` restores CommonJS globals (`require`, `__filename`, `__dirname`) that some bundled dependencies might expect in ESM
+- Explicit `buildCommand` and `outputDirectory` tells Vercel to use the bundle
+- `noExternal` forces workspace packages to be inlined, avoiding `.ts` exports
+
+**Caveat:** This is essentially Option C (bundling) with better Vercel configuration. If Vercel still executes `src/server` instead of `dist/server.js`, it won't help.
 
 ## References
 

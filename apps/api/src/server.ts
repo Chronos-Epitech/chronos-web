@@ -3,6 +3,7 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import type { OpenAPIV3 } from "openapi-types";
 import { clerkPlugin } from "@clerk/fastify";
 import {
   fastifyTRPCPlugin,
@@ -57,9 +58,11 @@ server.get("/health", async () => {
 // Serve OpenAPI spec and Swagger UI
 server.get("/openapi.json", async () => openApiDocument);
 
-server.register(fastifySwagger as any, {
+server.register(fastifySwagger, {
   mode: "static",
-  specification: { document: openApiDocument },
+  specification: {
+    document: openApiDocument as OpenAPIV3.Document,
+  },
 });
 
 server.register(fastifySwaggerUi, {
