@@ -66,14 +66,23 @@ export default async function Page() {
             role: membersData.manager.role,
             avatarUrl: membersData.manager.avatarUrl,
           },
-          ...membersData.users.map((user) => ({
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            role: user.role,
-            avatarUrl: user.avatarUrl,
-          })),
+          ...membersData.users.map(
+            (user: {
+              id: string;
+              firstName: string | null;
+              lastName: string | null;
+              email: string | null;
+              role: string;
+              avatarUrl: string | null;
+            }) => ({
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              role: user.role,
+              avatarUrl: user.avatarUrl,
+            }),
+          ),
         ];
         teamMembers = allMembers;
       }
