@@ -20,7 +20,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/forms/form";
 import { SendInvitationInput } from "@chronos/types";
 
 export default function InviteForm() {
