@@ -32,8 +32,6 @@ import { ScheduleHistoryCard } from "@/components/ui/cards/schedule-history-card
 import KpiWorkingHoursDone from "@/components/ui/kpi/kpi-working-hours-done";
 import { KpiLateMember } from "@/components/ui/kpi/kpi-late";
 
-import { ScheduleAreaChartCard } from "@/components/charts/schedule-area-chart-card";
-
 export default function DashboardClient({
   teams,
   userProfile,

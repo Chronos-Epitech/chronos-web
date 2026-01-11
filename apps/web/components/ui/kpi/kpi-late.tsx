@@ -174,7 +174,7 @@ export function KpiLateMember({
     }
 
     // Check if first check_in is late
-    for (const [dayKey, checkInTime] of checkInsByDay.entries()) {
+    for (const [, checkInTime] of checkInsByDay.entries()) {
       const hours = checkInTime.getHours();
       const minutes = checkInTime.getMinutes();
       const checkInMinutes = hours * 60 + minutes;
