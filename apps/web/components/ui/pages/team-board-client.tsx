@@ -18,7 +18,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/elements/dropdown-menu";
+import {
+  InviteSheet,
+  InviteSheetTrigger,
+} from "@/components/ui/forms/invite-bar";
 import Image from "next/image";
 
 import KpiWorkingHoursDoneTeam from "@/components/ui/kpi/kpi-working-hours-done-team";
@@ -103,6 +107,7 @@ export default function TeamBoardClient({
     "week",
   );
   const [showPopup, setShowPopup] = useState(false);
+  const [showInviteSheet, setShowInviteSheet] = useState(false);
 
   const openPopup = async (member: TeamMember) => {
     if (!authorization) return;
@@ -218,7 +223,18 @@ export default function TeamBoardClient({
 
               {/* RIGHT — TABLE */}
               <div className="w-full lg:w-2/3 p-4 flex flex-col h-full">
-                <HeaderTitle title="Team Members" className="mb-4" />
+                <div className="flex justify-between items-center mb-4">
+                  <HeaderTitle title="Team Members" />
+                  {authorization && (
+                    <>
+                      <InviteSheetTrigger onOpenChange={setShowInviteSheet} />
+                      <InviteSheet
+                        open={showInviteSheet}
+                        onOpenChange={setShowInviteSheet}
+                      />
+                    </>
+                  )}
+                </div>
 
                 <div className="bg-card rounded-xl p-2 sm:p-4 overflow-x-auto overflow-y-auto flex-1 min-h-0">
                   <table className="w-full text-sm min-w-[600px] table-fixed">

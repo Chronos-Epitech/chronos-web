@@ -1,9 +1,10 @@
+// imports
 import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
 import type { Tables } from "@chronos/types";
-import TeamBoardClient from "@/components/ui/team-board-client";
+import TeamBoardClient from "@/components/ui/pages/team-board-client";
 
-// Définir le type User pour l'équipe
+// define the type User for the team
 type TeamUser = {
   id: string;
   firstName: string | null;
@@ -16,7 +17,7 @@ type TeamUser = {
 export default async function Page() {
   let teamMembers: TeamUser[] = [];
 
-  // Récupération du profil utilisateur depuis Supabase
+  // get user profile from Supabase
   let userProfile: Tables<"users"> | null = null;
   try {
     userProfile = await trpc.user.me.query();
@@ -38,7 +39,7 @@ export default async function Page() {
     }
   }
 
-  // Récupération de l'équipe de l'utilisateur
+  // get the team of the user
   let teamId: string | null = null;
   try {
     const teams = await trpc.team.getAll.query();
@@ -51,14 +52,14 @@ export default async function Page() {
     }
   }
 
-  // Récupération des membres de l'équipe
+  // get the team members
   if (teamId) {
     try {
       const membersData = await trpc.teamMember.getAll.query({
         team_id: teamId,
       });
       if (membersData) {
-        // Inclure le manager dans la liste des membres
+        // include the manager in the list of members
         const allMembers: TeamUser[] = [
           {
             id: membersData.manager.id,
