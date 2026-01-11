@@ -51,6 +51,7 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
 
       # Used by `bun run test:api` (passes as StepCI secret via `-s`)
       AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
