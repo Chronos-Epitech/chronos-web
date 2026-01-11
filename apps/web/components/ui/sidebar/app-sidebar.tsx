@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTrpcClient } from "@/trpc/client";
 import { toast } from "sonner";
+import { useClerk } from "@clerk/nextjs";
 import type { Tables } from "@chronos/types";
 import { useState } from "react";
 
@@ -31,6 +32,7 @@ export function AppSidebar({
 }: AppSidebarProps = {}) {
   const router = useRouter();
   const trpc = useTrpcClient();
+  const clerk = useClerk();
   const [isCheckingTeam, setIsCheckingTeam] = useState(false);
 
   const role = userProfile?.role ?? "member";
@@ -145,7 +147,10 @@ export function AppSidebar({
             )}
 
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Paramètres" onClick={onSettingsClick}>
+              <SidebarMenuButton
+                tooltip="Paramètres"
+                onClick={() => clerk.openUserProfile()}
+              >
                 <Settings />
                 <span>Paramètres</span>
               </SidebarMenuButton>
