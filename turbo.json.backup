@@ -1,0 +1,39 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "interruptible": true
+    },
+    "start": {
+      "cache": false,
+      "persistent": true,
+      "interruptible": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "cache": false
+    },
+    "generate:types": {
+      "cache": false,
+      "outputs": ["packages/types/src/supabase-types.ts"]
+    },
+    "check": {
+      "dependsOn": ["format:check"]
+    },
+    "test:api": {
+      "cache": false
+    }
+  }
+}
