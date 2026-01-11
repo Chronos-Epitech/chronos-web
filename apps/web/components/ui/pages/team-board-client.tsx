@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import type { Tables } from "@chronos/types";
-import { HeaderTitle } from "@/components/ui/header-title";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { HeaderTitle } from "@/components/ui/elements/header-title";
+import { Separator } from "@/components/ui/elements/separator";
+import { Button } from "@/components/ui/buttons/button";
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/ui/app-sidebar";
+} from "@/components/ui/sidebar/sidebar";
+import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 import { UserProfile, useClerk, SignedIn, UserButton } from "@clerk/nextjs";
 import { MoreHorizontal, X } from "lucide-react";
 import {
@@ -21,10 +21,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
-import KpiWorkingHoursDoneTeam from "@/components/ui/kpi-working-hours-done-team";
-import KpiLateTeam from "@/components/ui/kpi-late-team";
-import KpiWorkingHoursDone from "@/components/ui/kpi-working-hours-done";
-import { KpiLateMember } from "@/components/ui/kpi-late";
+import KpiWorkingHoursDoneTeam from "@/components/ui/kpi/kpi-working-hours-done-team";
+import KpiLateTeam from "@/components/ui/kpi/kpi-late-team";
+import KpiWorkingHoursDone from "@/components/ui/kpi/kpi-working-hours-done";
+import { KpiLateMember } from "@/components/ui/kpi/kpi-late";
 import { useTrpcClient } from "@/trpc/client";
 
 interface TeamMember {
@@ -221,15 +221,22 @@ export default function TeamBoardClient({
                 <HeaderTitle title="Team Members" className="mb-4" />
 
                 <div className="bg-card rounded-xl p-2 sm:p-4 overflow-x-auto overflow-y-auto flex-1 min-h-0">
-                  <table className="w-full text-sm min-w-[600px]">
+                  <table className="w-full text-sm min-w-[600px] table-fixed">
+                    <colgroup>
+                      <col className="w-[20%]" />
+                      <col className="w-[20%]" />
+                      <col className="hidden sm:table-column w-[30%]" />
+                      <col className="w-[20%]" />
+                      {authorization && <col className="w-[10%]" />}
+                    </colgroup>
                     <thead>
                       <tr className="border-b text-muted-foreground">
-                        <th className="py-2 px-2 sm:px-3">Prénom</th>
-                        <th className="py-2 px-2 sm:px-3">Nom</th>
-                        <th className="py-2 px-2 sm:px-3 hidden sm:table-cell">
+                        <th className="py-2 px-2 sm:px-3 text-left">Prénom</th>
+                        <th className="py-2 px-2 sm:px-3 text-left">Nom</th>
+                        <th className="py-2 px-2 sm:px-3 hidden sm:table-cell text-left">
                           Email
                         </th>
-                        <th className="py-2 px-2 sm:px-3">Rôle</th>
+                        <th className="py-2 px-2 sm:px-3 text-left">Rôle</th>
                         {authorization && (
                           <th className="py-2 px-2 sm:px-3 text-right" />
                         )}
@@ -242,12 +249,16 @@ export default function TeamBoardClient({
                           className="border-b hover:bg-muted/30 cursor-pointer"
                           onClick={() => openPopup(m)}
                         >
-                          <td className="py-2 px-2 sm:px-3">{m.firstName}</td>
-                          <td className="py-2 px-2 sm:px-3">{m.lastName}</td>
-                          <td className="py-2 px-2 sm:px-3 hidden sm:table-cell">
+                          <td className="py-2 px-2 sm:px-3 text-left truncate">
+                            {m.firstName}
+                          </td>
+                          <td className="py-2 px-2 sm:px-3 text-left truncate">
+                            {m.lastName}
+                          </td>
+                          <td className="py-2 px-2 sm:px-3 hidden sm:table-cell text-left truncate">
                             {m.email}
                           </td>
-                          <td className="py-2 px-2 sm:px-3 capitalize">
+                          <td className="py-2 px-2 sm:px-3 text-left capitalize truncate">
                             {m.role}
                           </td>
 

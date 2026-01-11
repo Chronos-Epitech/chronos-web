@@ -7,7 +7,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "./card";
+} from "../cards/card";
 
 type Schedule = {
   date?: string; // YYYY-MM-DD

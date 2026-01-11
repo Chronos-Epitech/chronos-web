@@ -2,7 +2,7 @@ import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { Team } from "@chronos/types";
-import DashboardClient from "@/components/ui/dashboard-client";
+import DashboardClient from "@/components/ui/pages/dashboard-client";
 
 export default async function Page() {
   let teams: z.infer<typeof Team>[] = [];
