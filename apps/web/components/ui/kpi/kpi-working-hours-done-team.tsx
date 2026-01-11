@@ -47,10 +47,6 @@ function toDate(s?: string | null) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-function msToHours(ms: number) {
-  return ms / (1000 * 60 * 60);
-}
-
 function formatHoursAndMinutesFromMs(msTotal: number) {
   const totalMinutes = Math.floor(msTotal / 60000);
   const hours = Math.floor(totalMinutes / 60);
@@ -158,9 +154,6 @@ export default function KpiWorkingHoursDoneTeam({
 
     return { totalMs, daysWithData, avgPerDay };
   }, [schedules, includeOpenShiftUntilNow, period]);
-
-  const hours = msToHours(totalMs);
-  const avgHours = msToHours(avgPerDay);
 
   return (
     <Card>

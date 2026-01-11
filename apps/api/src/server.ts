@@ -3,17 +3,22 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import type { OpenAPIV3 } from "openapi-types";
 import { clerkPlugin } from "@clerk/fastify";
 import {
   fastifyTRPCPlugin,
   FastifyTRPCPluginOptions,
 } from "@trpc/server/adapters/fastify";
 import { fastifyTRPCOpenApiPlugin } from "trpc-to-openapi";
-import { appRouter, type AppRouter } from "./routers";
+import { appRouter, type AppRouter } from "./routers/index";
 import { openApiDocument } from "./openapi";
 import { createContext } from "./context";
 
 const server = fastify({ logger: true });
+
+server.get("/", async () => {
+  return { hello: "world" };
+});
 
 // Clerk: parse Authorization bearer and expose req.auth
 server.register(clerkPlugin);
@@ -33,7 +38,10 @@ server.register(fastifyTRPCPlugin, {
 });
 
 // Enable CORS globally
-server.register(cors, {});
+server.register(cors, {
+  origin: process.env.CORS_ORIGIN || true, // Allow all origins in dev, restrict in production
+  credentials: true,
+});
 
 // OpenAPI REST routes via trpc-to-openapi
 server.register(fastifyTRPCOpenApiPlugin, {
@@ -50,17 +58,16 @@ server.get("/health", async () => {
 // Serve OpenAPI spec and Swagger UI
 server.get("/openapi.json", async () => openApiDocument);
 
-server.register(fastifySwagger as any, {
+server.register(fastifySwagger, {
   mode: "static",
-  specification: { document: openApiDocument },
+  specification: {
+    document: openApiDocument as OpenAPIV3.Document,
+  },
 });
 
 server.register(fastifySwaggerUi, {
   routePrefix: "/docs",
 });
-
-const port = Number(process.env.PORT ?? 3001);
-const host = process.env.HOST ?? "0.0.0.0";
 
 // Graceful shutdown handler
 const gracefulShutdown = async (signal: string) => {
@@ -81,11 +88,13 @@ const gracefulShutdown = async (signal: string) => {
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-server.listen({ port, host }).catch((err) => {
-  // Ensure we always see startup failures, even if logger output is misconfigured.
-  console.error(err);
-  server.log.error(err);
-  process.exit(1);
-});
+const port = Number(process.env.PORT) || 3001;
+const host = process.env.HOST || "0.0.0.0";
 
-export default server;
+server.listen({ port, host }, (err, address) => {
+  if (err) {
+    server.log.error(err);
+    process.exit(1);
+  }
+  server.log.info(`Server listening on ${address}`);
+});

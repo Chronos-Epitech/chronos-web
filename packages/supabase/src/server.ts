@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { Database } from "@chronos/types/src/supabase-types";
+import { Database } from "@chronos/types";
 
 export function createServerSupabaseClient(accessToken?: string | null) {
   return createClient<Database>(

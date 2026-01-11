@@ -1,11 +1,14 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, adminProcedure, protectedProcedure } from "../trpc";
-import { CreateUserInput, UpdateUserInput, UserId } from "@chronos/types";
-import { User as ClerkUser } from "@clerk/backend";
+import {
+  CreateUserInput,
+  UpdateUserInput,
+  UserId,
+  Database,
+} from "@chronos/types";
 import { users } from "@chronos/data";
 import { createClient } from "@supabase/supabase-js";
-import { Database } from "@chronos/types/src/supabase-types";
 
 const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_URL!,

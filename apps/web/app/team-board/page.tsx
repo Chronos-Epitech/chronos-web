@@ -1,7 +1,9 @@
 import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
+import TeamBoardClient from "@/components/ui/pages/team-board-client";
 import type { Tables } from "@chronos/types";
-import TeamBoardClient from "@/components/ui/team-board-client";
+
+export const dynamic = "force-dynamic";
 
 // Définir le type User pour l'équipe
 type TeamUser = {
@@ -47,7 +49,8 @@ export default async function Page() {
     if (error instanceof TRPCError && error.code === "FORBIDDEN") {
       console.error("Accès interdit pour les équipes");
     } else {
-      console.error("Erreur lors de la récupération des équipes:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("Erreur lors de la récupération des équipes:", message);
     }
   }
 
@@ -83,7 +86,8 @@ export default async function Page() {
       if (error instanceof TRPCError && error.code === "FORBIDDEN") {
         console.error("Accès interdit pour les membres d'équipe");
       } else {
-        console.error("Erreur lors de la récupération des membres:", error);
+        const message = error instanceof Error ? error.message : String(error);
+        console.error("Erreur lors de la récupération des membres:", message);
       }
     }
   }
