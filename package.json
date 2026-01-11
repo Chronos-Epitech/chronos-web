@@ -7,7 +7,7 @@
     "dev": "turbo dev",
     "start": "turbo start",
     "lint": "turbo lint",
-    "test:api": "bunx stepci run tests/workflow.yml -s AUTH_TOKEN=$AUTH_TOKEN",
+    "test:api": "bunx stepci run tests/workflow.yml -s AUTH_TOKEN=\"$AUTH_TOKEN\"",
     "generate:types": "bunx supabase gen types typescript --project-id yskfiximuoiizdcwmpdn --schema public > packages/types/src/supabase-types.ts",
     "format": "bunx prettier --write .",
     "format:check": "bunx prettier --check .",
