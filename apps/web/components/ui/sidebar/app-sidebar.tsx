@@ -51,23 +51,27 @@ export function AppSidebar({
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Équipes et membres" asChild>
-                <Link href="/teams-and-members">
-                  <Users />
-                  <span>Équipes et membres</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {role === "admin" && (
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Equipes et membres" asChild>
+                  <Link href="/admin">
+                    <Users />
+                    <span>Equipes et membres</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
 
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Mon équipe" asChild>
-                <Link href="/team-board">
-                  <Calendar />
-                  <span>Mon équipe</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {role === "manager" && (
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Mon équipe" asChild>
+                  <Link href="/team-board">
+                    <Calendar />
+                    <span>Mon équipe</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
 
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Paramètres" onClick={onSettingsClick}>

@@ -145,7 +145,7 @@ export async function addTeamMember(
   // Check if team exists
   const { data: team, error: teamError } = await supabase
     .from("teams")
-    .select("id")
+    .select("id, manager_id")
     .eq("id", input.team_id)
     .maybeSingle();
 
@@ -160,6 +160,16 @@ export async function addTeamMember(
       code: "NOT_FOUND",
       message: "Team not found",
     });
+  }
+
+  // If user is a manager (not admin), verify they manage this team
+  if (ctx.role === "manager" && ctx.auth?.userId) {
+    if (team.manager_id !== ctx.auth.userId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You can only add members to your own team",
+      });
+    }
   }
 
   // Check if member already exists

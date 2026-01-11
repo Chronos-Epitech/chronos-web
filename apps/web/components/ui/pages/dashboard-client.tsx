@@ -1,4 +1,7 @@
+// client component
 "use client";
+
+// imports
 import { useTrpcClient } from "@/trpc/client";
 import * as React from "react";
 import { z } from "zod";
@@ -32,8 +35,6 @@ import { ScheduleHistoryCard } from "@/components/ui/cards/schedule-history-card
 import KpiWorkingHoursDone from "@/components/ui/kpi/kpi-working-hours-done";
 import { KpiLateMember } from "@/components/ui/kpi/kpi-late";
 
-import { ScheduleAreaChartCard } from "@/components/charts/schedule-area-chart-card";
-
 export default function DashboardClient({
   teams,
   userProfile,
@@ -45,7 +46,7 @@ export default function DashboardClient({
   const trpc = useTrpcClient();
   const [showUserProfile, setShowUserProfile] = useState(false);
 
-  // Récupération des données utilisateur depuis Supabase
+  // get the user profile from Supabase
   const firstName = userProfile?.first_name ?? "Prénom";
   const lastName = userProfile?.last_name ?? "Nom";
   const role = userProfile?.role ?? "member";
@@ -60,7 +61,7 @@ export default function DashboardClient({
   const initials =
     (firstName?.[0] ?? "").toUpperCase() + (lastName?.[0] ?? "").toUpperCase();
 
-  // Fetch user schedules
+  // fetch user schedules
   const [schedules, setSchedules] = useState<Tables<"schedules">[]>([]);
   const [, forceTick] = useState(0);
 
@@ -78,7 +79,7 @@ export default function DashboardClient({
     loadSchedules();
   }, [trpc]);
 
-  // Tick every second for the "since last activity" timer
+  // tick every second for the "since last activity" timer
   useEffect(() => {
     const id = window.setInterval(() => forceTick((x) => x + 1), 1000);
     return () => window.clearInterval(id);
@@ -112,16 +113,15 @@ export default function DashboardClient({
     }
   }, [trpc]);
 
-  // ============================
-  // ARRIVAL (checkIn)
-  // ============================
+  // ARRIVAL (checkIn root)
+
   const handleArrival = async () => {
     const now = new Date();
 
     try {
       await trpc.schedule.checkIn.mutate({});
 
-      // Mutation succeeded - refetch schedules to update chart
+      // Mutation succeeded - refetch schedules to update history
       await refetchSchedules();
 
       toast("Arrival saved at:", {
@@ -142,16 +142,15 @@ export default function DashboardClient({
     }
   };
 
-  // ============================
-  // DEPARTURE (checkOut)
-  // ============================
+  // DEPARTURE (checkOut root)
+
   const handleDeparture = async () => {
     const now = new Date();
 
     try {
       await trpc.schedule.checkOut.mutate({});
 
-      // Mutation succeeded - refetch schedules to update chart
+      // Mutation succeeded - refetch schedules to update history
       await refetchSchedules();
 
       toast("Departure saved at:", {
@@ -348,7 +347,7 @@ export default function DashboardClient({
                   </div>
                 </div>
 
-                {/* Historique des pointages */}
+                {/* schedule history */}
                 <div className="flex-1 min-h-0">
                   <ScheduleHistoryCard schedules={schedules} />
                 </div>
@@ -357,7 +356,7 @@ export default function DashboardClient({
           </div>
         </div>
 
-        {/* Clerk modal */}
+        {/* clerk modal */}
         {showUserProfile && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
