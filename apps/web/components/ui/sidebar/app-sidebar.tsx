@@ -10,17 +10,28 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar/sidebar";
 
 import { LayoutDashboard, Users, Calendar, Settings } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type { Tables } from "@chronos/types";
 
 interface AppSidebarProps {
   onSettingsClick?: () => void;
+  userProfile?: Tables<"users"> | null;
 }
 
-export function AppSidebar({ onSettingsClick }: AppSidebarProps = {}) {
-  const router = useRouter();
+export function AppSidebar({
+  onSettingsClick,
+  userProfile,
+}: AppSidebarProps = {}) {
+  const role = userProfile?.role ?? "member";
+  const roleLabel =
+    role === "admin"
+      ? "Administrateur"
+      : role === "manager"
+        ? "Manager"
+        : "Membre";
 
   return (
     <Sidebar collapsible="offcanvas">
@@ -28,13 +39,15 @@ export function AppSidebar({ onSettingsClick }: AppSidebarProps = {}) {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Manager</SidebarGroupLabel>
+          <SidebarGroupLabel>{roleLabel}</SidebarGroupLabel>
 
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Dashboard">
-                <LayoutDashboard />
-                <span>Dashboard</span>
+              <SidebarMenuButton tooltip="dashboard" asChild>
+                <Link href="/dashboard">
+                  <LayoutDashboard />
+                  <span>Dashboard</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
@@ -49,12 +62,11 @@ export function AppSidebar({ onSettingsClick }: AppSidebarProps = {}) {
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton
-                tooltip="Planning"
-                onClick={() => router.push("/team-board")}
-              >
-                <Calendar />
-                <span>Mon équipe</span>
+              <SidebarMenuButton tooltip="Mon équipe" asChild>
+                <Link href="/team-board">
+                  <Calendar />
+                  <span>Mon équipe</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 

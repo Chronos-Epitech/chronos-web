@@ -6,7 +6,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "./card";
+} from "../cards/card";
 
 type RawScheduleTeam = {
   user_id?: string;

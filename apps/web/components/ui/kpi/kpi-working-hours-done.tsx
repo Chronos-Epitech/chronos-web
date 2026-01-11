@@ -6,7 +6,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "./card";
+} from "../cards/card";
 
 type RawSchedule = {
   type: "check_in" | "check_out" | string;
@@ -110,17 +110,17 @@ export default function KpiWorkingHoursDone({
   const hours = msToHours(totalMs);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{"Heures travaillées"}</CardTitle>
-        <CardDescription>
+    <Card className="h-full flex flex-col py-4 gap-4">
+      <CardHeader className="py-2 px-4">
+        <CardTitle className="text-sm">{"Heures travaillées"}</CardTitle>
+        <CardDescription className="text-xs">
           Total heures travaillées {period && `(${period})`}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-baseline gap-3">
-          <div className="text-3xl font-semibold">{hours.toFixed(2)}h</div>
-          <div className="text-muted-foreground">
+      <CardContent className="flex-1 px-4 py-2">
+        <div className="flex items-baseline gap-2">
+          <div className="text-2xl font-semibold">{hours.toFixed(2)}h</div>
+          <div className="text-xs text-muted-foreground">
             {formatHoursAndMinutes(totalMs)}
           </div>
         </div>
