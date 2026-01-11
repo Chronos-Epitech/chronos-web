@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Sidebar,
@@ -10,28 +10,21 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  Settings,
-} from "lucide-react"
-import { useRouter } from "next/navigation"
+import { LayoutDashboard, Users, Calendar, Settings } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface AppSidebarProps {
-  onSettingsClick?: () => void
+  onSettingsClick?: () => void;
 }
 
 export function AppSidebar({ onSettingsClick }: AppSidebarProps = {}) {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <Sidebar collapsible="offcanvas">
-      <SidebarHeader>
-        MENU
-      </SidebarHeader>
+      <SidebarHeader>MENU</SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
@@ -53,7 +46,10 @@ export function AppSidebar({ onSettingsClick }: AppSidebarProps = {}) {
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Planning" onClick={() => router.push("/team-board")}>
+              <SidebarMenuButton
+                tooltip="Planning"
+                onClick={() => router.push("/team-board")}
+              >
                 <Calendar />
                 <span>Mon équipe</span>
               </SidebarMenuButton>
@@ -73,5 +69,5 @@ export function AppSidebar({ onSettingsClick }: AppSidebarProps = {}) {
         © Chronos
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

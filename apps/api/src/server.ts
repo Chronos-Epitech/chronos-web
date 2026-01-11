@@ -42,6 +42,11 @@ server.register(fastifyTRPCOpenApiPlugin, {
   createContext,
 });
 
+// Health check endpoint
+server.get("/health", async () => {
+  return { status: "ok" };
+});
+
 // Serve OpenAPI spec and Swagger UI
 server.get("/openapi.json", async () => openApiDocument);
 
@@ -56,6 +61,25 @@ server.register(fastifySwaggerUi, {
 
 const port = Number(process.env.PORT ?? 3001);
 const host = process.env.HOST ?? "0.0.0.0";
+
+// Graceful shutdown handler
+const gracefulShutdown = async (signal: string) => {
+  server.log.info(`Received ${signal}, shutting down gracefully...`);
+
+  try {
+    await server.close();
+    server.log.info("Server closed successfully");
+    process.exit(0);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    server.log.error(`Error during shutdown: ${errorMessage}`);
+    process.exit(1);
+  }
+};
+
+// Handle termination signals
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 server.listen({ port, host }).catch((err) => {
   // Ensure we always see startup failures, even if logger output is misconfigured.
