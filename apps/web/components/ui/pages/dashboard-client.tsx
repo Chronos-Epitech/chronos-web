@@ -3,15 +3,19 @@ import { useTrpcClient } from "@/trpc/client";
 import * as React from "react";
 import { z } from "zod";
 import type { Tables, Team } from "@chronos/types";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/buttons/button";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/components/ui/images/avatar";
 import { SignedIn, UserButton, UserProfile, useClerk } from "@clerk/nextjs";
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/ui/app-sidebar";
+} from "@/components/ui/sidebar/sidebar";
+import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 import {
   Card,
   CardContent,
@@ -19,13 +23,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarWeek } from "@/components/ui/calendar-week";
+} from "@/components/ui/cards/card";
 import { toast } from "sonner";
 import Image from "next/image";
 import { formatDurationSince } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
+import { ScheduleHistoryCard } from "@/components/ui/cards/schedule-history-card";
+import KpiWorkingHoursDone from "@/components/ui/kpi/kpi-working-hours-done";
+import { KpiLateMember } from "@/components/ui/kpi/kpi-late";
+
 import { ScheduleAreaChartCard } from "@/components/charts/schedule-area-chart-card";
 
 export default function DashboardClient({
@@ -37,8 +43,6 @@ export default function DashboardClient({
 }) {
   const clerk = useClerk();
   const trpc = useTrpcClient();
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [mode, setMode] = useState<"week" | "month">("week");
   const [showUserProfile, setShowUserProfile] = useState(false);
 
   // Récupération des données utilisateur depuis Supabase
@@ -170,11 +174,14 @@ export default function DashboardClient({
 
   return (
     <SidebarProvider>
-      <AppSidebar onSettingsClick={() => setShowUserProfile(true)} />
-      <SidebarInset className="min-h-screen">
-        <div className="relative min-h-screen w-full bg-linear-to-b from-background to-muted/30">
+      <AppSidebar
+        onSettingsClick={() => setShowUserProfile(true)}
+        userProfile={userProfile}
+      />
+      <SidebarInset className="h-screen overflow-hidden">
+        <div className="relative h-screen w-full bg-linear-to-b from-background to-muted/30 flex flex-col">
           {/* Header */}
-          <div className="w-full h-20 bg-background/80 backdrop-blur px-4 sm:px-8 border-b border-border flex items-center justify-between fixed top-0 z-10">
+          <div className="w-full h-20 bg-background/80 backdrop-blur px-4 sm:px-8 border-b border-border flex items-center justify-between shrink-0 z-10">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
               <Image
@@ -197,12 +204,12 @@ export default function DashboardClient({
           </div>
 
           {/* Content */}
-          <div className="pt-24 pb-10 px-4 sm:px-8 sm:h-full">
-            <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 lg:flex-row lg:gap-8">
+          <div className="flex-1 min-h-0 px-4 sm:px-8 py-4 overflow-auto">
+            <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 lg:flex-row lg:gap-4 h-full">
               {/* left screen */}
-              <div className="flex w-full flex-col gap-6 lg:w-[380px]">
+              <div className="flex w-full flex-col gap-3 lg:w-[380px] lg:shrink-0 h-full">
                 {/* User Card */}
-                <Card>
+                <Card className="flex-1 flex flex-col">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -228,8 +235,8 @@ export default function DashboardClient({
                     </div>
                   </CardHeader>
 
-                  <CardContent>
-                    <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  <CardContent className="flex-1">
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="space-y-1">
                         <dt className="text-xs text-muted-foreground">Nom</dt>
                         <dd className="text-sm font-semibold tracking-tight truncate">
@@ -259,7 +266,7 @@ export default function DashboardClient({
                 </Card>
 
                 {/* Card Schedules */}
-                <Card>
+                <Card className="flex-1 flex flex-col">
                   <CardHeader>
                     <CardTitle className="text-base sm:text-lg">
                       Pointage
@@ -269,7 +276,7 @@ export default function DashboardClient({
                     </CardDescription>
                   </CardHeader>
 
-                  <CardContent className="pt-0">
+                  <CardContent className="flex-1 pt-0 flex flex-col">
                     <div className="rounded-lg border border-border/70 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
                       {lastActivityDate && lastActivityLabel ? (
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -298,7 +305,7 @@ export default function DashboardClient({
                       )}
                     </div>
 
-                    <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row flex-1 items-end">
                       <Button
                         className="flex-1"
                         size="lg"
@@ -319,34 +326,32 @@ export default function DashboardClient({
                     </div>
                   </CardContent>
                 </Card>
-
-                <ScheduleAreaChartCard
-                  schedules={schedules}
-                  mode={mode}
-                  onModeChange={setMode}
-                  selectedDate={date}
-                />
               </div>
 
               {/* right screen */}
-              <div className="w-full flex flex-col lg:flex-1">
-                {mode === "week" ? (
-                  <CalendarWeek
-                    selectedDate={date}
-                    onSelect={setDate}
-                    className="rounded-xl border border-border/70 w-full bg-card"
-                    mode={mode}
-                    onModeChange={setMode}
-                  />
-                ) : (
-                  <Calendar
-                    selectedDate={date}
-                    onSelect={setDate}
-                    className="rounded-xl border border-border/70 w-full h-[680px] bg-card"
-                    mode={mode}
-                    onModeChange={setMode}
-                  />
-                )}
+              <div className="w-full lg:flex-1 flex flex-col min-w-0 gap-3 h-full">
+                {/* KPI section */}
+                <div className="flex flex-col sm:flex-row gap-3 max-h-[200px] sm:max-h-[200px] shrink-0">
+                  <div className="flex-1 min-w-0">
+                    <KpiWorkingHoursDone
+                      schedules={schedules}
+                      includeOpenShiftUntilNow={false}
+                      period="week"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <KpiLateMember
+                      schedules={schedules}
+                      toleranceMinutes={0}
+                      period="week"
+                    />
+                  </div>
+                </div>
+
+                {/* Historique des pointages */}
+                <div className="flex-1 min-h-0">
+                  <ScheduleHistoryCard schedules={schedules} />
+                </div>
               </div>
             </div>
           </div>

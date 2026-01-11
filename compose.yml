@@ -1,33 +1,82 @@
+version: "3.9"
+
 services:
-  app:
+  api:
     build:
       context: .
       dockerfile: Dockerfile.bun
-      target: runner
-    container_name: chronos-app
+      target: builder
+    container_name: chronos-api-dev
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - HOSTNAME=0.0.0.0
+    volumes:
+      - ./apps/api:/app/apps/api:cached
+      - /app/node_modules
+    working_dir: /app/apps/api
+    command: bun run dev
+    networks:
+      - chronos
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.bun
+      target: builder
+    container_name: chronos-web-dev
     env_file:
       - .env
     environment:
       - NODE_ENV=development
       - PORT=3000
       - HOSTNAME=0.0.0.0
-    expose:
-      - "3000"
+    volumes:
+      - ./apps/web:/app/apps/web:cached
+      - /app/node_modules
+    working_dir: /app/apps/web
+    command: bun run dev
     networks:
       - chronos
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    container_name: chronos-db-dev
+    environment:
+      POSTGRES_USER: chronos
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: chronos
+    volumes:
+      - chronos-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - chronos
+    restart: unless-stopped
 
   proxy:
     image: nginx:1.27-alpine
-    container_name: chronos-proxy
+    container_name: chronos-proxy-dev
     ports:
-      - "3000:80" # public port exposed on host for dev
+      - "8080:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
-      - app
+      - web
+      - api
     networks:
       - chronos
+    restart: unless-stopped
 
 networks:
   chronos:
     driver: bridge
+
+volumes:
+  chronos-db-data:
