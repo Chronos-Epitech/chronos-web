@@ -1,0 +1,842 @@
+version: "1.0"
+name: Chronos API
+env:
+  # Environment variables for API testing
+  # Note: AUTH_TOKEN is passed via StepCI secrets (not env) for security
+  # Example:
+  #   source .env.test && bun run test:api
+  BASE_URL: http://localhost:3001/api
+
+  # Optional IDs for endpoints that require them
+  TEAM_ID: 00000000-0000-0000-0000-000000000000
+  USER_ID: user_test
+  SCHEDULE_ID: 00000000-0000-0000-0000-000000000000
+  INVITATION_ID: invitation_test
+
+  # Optional inputs for mutating/admin endpoints
+  NEW_TEAM_NAME: stepci-team
+  MANAGER_ID: user_test
+  INVITEE_EMAIL: stepci.invitee@example.com
+  INVITEE_ROLE: admin
+  NEW_USER_EMAIL: stepci.user@example.com
+  NEW_USER_PASSWORD: Password123!
+  NEW_USER_ROLE: member
+config:
+  continueOnFail: true
+  http:
+    baseURL: "${{env.BASE_URL}}"
+    headers:
+      accept: application/json
+tests:
+  default:
+    name: Default
+    steps:
+      - id: team-getAll
+        name: Get all teams
+        http:
+          url: /teams
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          captures:
+            existing_team_id:
+              jsonpath: $[0].id
+            manager_user_id:
+              jsonpath: $[0].manager_id
+          check:
+            status: 200
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    $ref: "#/components/schemas/TeamId"
+                  manager_id:
+                    type: string
+                  name:
+                    type: string
+                required:
+                  - id
+                  - manager_id
+                  - name
+                additionalProperties: false
+      - id: team-get
+        name: Get a team by id
+        http:
+          url: /teams/${{captures.existing_team_id}}
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      $ref: "#/components/schemas/TeamId"
+                    manager_id:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - manager_id
+                    - name
+                  additionalProperties: false
+                - type: "null"
+      - id: team-update
+        name: Update a team's name
+        http:
+          url: /teams/${{captures.existing_team_id}}
+          method: PUT
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json:
+            name: Updated Team Name
+          check:
+            status: 200
+            schema:
+              anyOf:
+                - type: object
+                  properties:
+                    id:
+                      $ref: "#/components/schemas/TeamId"
+                    manager_id:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - id
+                    - manager_id
+                    - name
+                  additionalProperties: false
+                - type: "null"
+      - id: teamMember-getAll
+        name: Get all members of a team
+        http:
+          url: /teams/${{captures.existing_team_id}}/members
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              type: object
+              properties:
+                manager:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    email:
+                      anyOf:
+                        - type: string
+                        - type: "null"
+                    role:
+                      type: string
+                      enum:
+                        - admin
+                        - manager
+                        - member
+                    avatarUrl:
+                      anyOf:
+                        - type: string
+                        - type: "null"
+                  required:
+                    - id
+                    - firstName
+                    - lastName
+                    - email
+                    - role
+                    - avatarUrl
+                  additionalProperties: false
+                users:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                      email:
+                        anyOf:
+                          - type: string
+                          - type: "null"
+                      role:
+                        type: string
+                        enum:
+                          - admin
+                          - manager
+                          - member
+                      avatarUrl:
+                        anyOf:
+                          - type: string
+                          - type: "null"
+                    required:
+                      - id
+                      - firstName
+                      - lastName
+                      - email
+                      - role
+                      - avatarUrl
+                    additionalProperties: false
+              required:
+                - manager
+                - users
+              additionalProperties: false
+      - id: teamMember-add
+        name: Add a member to a team
+        http:
+          url: /teams/${{captures.existing_team_id}}/members
+          method: POST
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json:
+            userId: ${{captures.manager_user_id}}
+          check:
+            status: 200
+            schema:
+              type: object
+              properties:
+                teamId:
+                  $ref: "#/components/schemas/TeamId"
+                userId:
+                  type: string
+                createdAt:
+                  type: string
+              required:
+                - teamId
+                - userId
+              additionalProperties: false
+      - id: teamMember-remove
+        name: Remove a member from a team
+        http:
+          url: /teams/${{captures.existing_team_id}}/members/${{captures.manager_user_id}}
+          method: DELETE
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              type: object
+              properties:
+                teamId:
+                  $ref: "#/components/schemas/TeamId"
+                userId:
+                  type: string
+                createdAt:
+                  type: string
+              required:
+                - teamId
+                - userId
+              additionalProperties: false
+      - id: invitation-send
+        name: Send an invitation
+        http:
+          url: /invitations
+          method: POST
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json:
+            email: newinvitee@example.com
+            role: ${{env.INVITEE_ROLE}}
+          captures:
+            new_invitation_id:
+              jsonpath: $.id
+          check:
+            status: 200
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                emailAddress:
+                  type: string
+                  format: email
+                  pattern: >-
+                    ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                publicMetadata:
+                  anyOf:
+                    - type: object
+                      propertyNames:
+                        type: string
+                      additionalProperties: {}
+                    - type: "null"
+                createdAt:
+                  type: number
+                updatedAt:
+                  type: number
+                status:
+                  type: string
+                url:
+                  type: string
+                revoked:
+                  type: boolean
+              required:
+                - id
+                - emailAddress
+                - publicMetadata
+                - createdAt
+                - updatedAt
+                - status
+              additionalProperties: false
+      - id: invitation-list
+        name: List invitations
+        http:
+          url: /invitations
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          captures:
+            invitation_id:
+              jsonpath: $.data[0].id
+          check:
+            status: 200
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      emailAddress:
+                        type: string
+                        format: email
+                        pattern: >-
+                          ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                      publicMetadata:
+                        anyOf:
+                          - type: object
+                            propertyNames:
+                              type: string
+                            additionalProperties: {}
+                          - type: "null"
+                      createdAt:
+                        type: number
+                      updatedAt:
+                        type: number
+                      status:
+                        type: string
+                      url:
+                        type: string
+                      revoked:
+                        type: boolean
+                    required:
+                      - id
+                      - emailAddress
+                      - publicMetadata
+                      - createdAt
+                      - updatedAt
+                      - status
+                    additionalProperties: false
+                totalCount:
+                  type: number
+              required:
+                - data
+                - totalCount
+              additionalProperties: false
+      - id: invitation-revoke
+        name: Revoke an invitation
+        http:
+          url: /invitations/${{captures.new_invitation_id}}
+          method: DELETE
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                emailAddress:
+                  type: string
+                  format: email
+                  pattern: >-
+                    ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                publicMetadata:
+                  anyOf:
+                    - type: object
+                      propertyNames:
+                        type: string
+                      additionalProperties: {}
+                    - type: "null"
+                createdAt:
+                  type: number
+                updatedAt:
+                  type: number
+                status:
+                  type: string
+                url:
+                  type: string
+                revoked:
+                  type: boolean
+              required:
+                - id
+                - emailAddress
+                - publicMetadata
+                - createdAt
+                - updatedAt
+                - status
+              additionalProperties: false
+      - id: user-getAll
+        name: Get all users
+        http:
+          url: /users
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              type: array
+              items: {}
+      - id: user-create
+        name: Create a user
+        http:
+          url: /users
+          method: POST
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json:
+            firstName: reprehenderit consequat veniam elit
+            lastName: dolore magna dolore qui in
+            password: StrongP@ssw0rd2024!
+            email: newuser@example.com
+            role: ${{env.NEW_USER_ROLE}}
+          captures:
+            created_user_id:
+              jsonpath: $.id
+          check:
+            status: 200
+            schema: {}
+      - id: user-get
+        name: Get a user by id
+        http:
+          url: /users/${{captures.created_user_id}}
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              anyOf:
+                - {}
+                - type: "null"
+      - id: user-update
+        name: Update a user
+        http:
+          url: /users/${{captures.created_user_id}}
+          method: PUT
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json:
+            firstName: eu dolore aliquip veniam laborum
+            lastName: commodo tempor eu sint quis
+            role: admin
+          check:
+            status: 200
+            schema:
+              anyOf:
+                - {}
+                - type: "null"
+      - id: user-delete
+        name: Delete a user
+        http:
+          url: /users/${{captures.created_user_id}}
+          method: DELETE
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              anyOf:
+                - {}
+                - type: "null"
+      - id: schedule-getAll
+        name: Get all schedules
+        http:
+          url: /schedules
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              type: array
+              items: {}
+      - id: schedule-create
+        name: Create a schedule
+        http:
+          url: /schedules
+          method: POST
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json:
+            user_id: ${{captures.manager_user_id}}
+            type: check_out
+            created_at: "2026-01-08T00:00:00.000Z"
+          captures:
+            created_schedule_id:
+              jsonpath: $.id
+          check:
+            status: 200
+            schema: {}
+      - id: schedule-get
+        name: Get a schedule by id
+        http:
+          url: /schedules/${{captures.created_schedule_id}}
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              anyOf:
+                - {}
+                - type: "null"
+      - id: schedule-update
+        name: Update a schedule
+        http:
+          url: /schedules/${{captures.created_schedule_id}}
+          method: PUT
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json:
+            type: check_in
+            created_at: "2026-01-08T01:00:00.000Z"
+          check:
+            status: 200
+            schema:
+              anyOf:
+                - {}
+                - type: "null"
+      - id: schedule-delete
+        name: Delete a schedule
+        http:
+          url: /schedules/${{captures.created_schedule_id}}
+          method: DELETE
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              anyOf:
+                - {}
+                - type: "null"
+      - id: schedule-getByUserId
+        name: Get schedules by user id
+        http:
+          url: /schedules/user/${{captures.manager_user_id}}
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              type: array
+              items: {}
+      - id: schedule-getMe
+        name: Get my schedules
+        http:
+          url: /schedules/me
+          method: GET
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          check:
+            status: 200
+            schema:
+              type: array
+              items: {}
+      - id: schedule-checkIn
+        name: Check in
+        http:
+          url: /schedules/check-in
+          method: POST
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json: {}
+          check:
+            status: 200
+            schema: {}
+      - id: schedule-checkOut
+        name: Check out
+        http:
+          url: /schedules/check-out
+          method: POST
+          auth:
+            bearer:
+              token: "${{secrets.AUTH_TOKEN}}"
+          headers:
+            Content-Type: application/json
+          json: {}
+          check:
+            status: 200
+            schema: {}
+components:
+  schemas:
+    TeamId:
+      type: string
+      format: uuid
+      pattern: >-
+        ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+    error.BAD_REQUEST:
+      title: Invalid input data error (400)
+      description: The error information
+      example:
+        code: BAD_REQUEST
+        message: Invalid input data
+        issues: []
+      type: object
+      properties:
+        message:
+          description: The error message
+          example: Invalid input data
+          type: string
+        code:
+          description: The error code
+          example: BAD_REQUEST
+          type: string
+        issues:
+          description: An array of issues that were responsible for the error
+          example: []
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+            additionalProperties: false
+      required:
+        - message
+        - code
+      additionalProperties: false
+    error.UNAUTHORIZED:
+      title: Authorization not provided error (401)
+      description: The error information
+      example:
+        code: UNAUTHORIZED
+        message: Authorization not provided
+        issues: []
+      type: object
+      properties:
+        message:
+          description: The error message
+          example: Authorization not provided
+          type: string
+        code:
+          description: The error code
+          example: UNAUTHORIZED
+          type: string
+        issues:
+          description: An array of issues that were responsible for the error
+          example: []
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+            additionalProperties: false
+      required:
+        - message
+        - code
+      additionalProperties: false
+    error.FORBIDDEN:
+      title: Insufficient access error (403)
+      description: The error information
+      example:
+        code: FORBIDDEN
+        message: Insufficient access
+        issues: []
+      type: object
+      properties:
+        message:
+          description: The error message
+          example: Insufficient access
+          type: string
+        code:
+          description: The error code
+          example: FORBIDDEN
+          type: string
+        issues:
+          description: An array of issues that were responsible for the error
+          example: []
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+            additionalProperties: false
+      required:
+        - message
+        - code
+      additionalProperties: false
+    error.NOT_FOUND:
+      title: Not found error (404)
+      description: The error information
+      example:
+        code: NOT_FOUND
+        message: Not found
+        issues: []
+      type: object
+      properties:
+        message:
+          description: The error message
+          example: Not found
+          type: string
+        code:
+          description: The error code
+          example: NOT_FOUND
+          type: string
+        issues:
+          description: An array of issues that were responsible for the error
+          example: []
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+            additionalProperties: false
+      required:
+        - message
+        - code
+      additionalProperties: false
+    error.INTERNAL_SERVER_ERROR:
+      title: Internal server error error (500)
+      description: The error information
+      example:
+        code: INTERNAL_SERVER_ERROR
+        message: Internal server error
+        issues: []
+      type: object
+      properties:
+        message:
+          description: The error message
+          example: Internal server error
+          type: string
+        code:
+          description: The error code
+          example: INTERNAL_SERVER_ERROR
+          type: string
+        issues:
+          description: An array of issues that were responsible for the error
+          example: []
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+            additionalProperties: false
+      required:
+        - message
+        - code
+      additionalProperties: false
+    CreateTeamInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        managerId:
+          type: string
+        memberIds:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - managerId
+      additionalProperties: false
+    UpdateTeamInput:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/TeamId"
+        name:
+          type: string
+      required:
+        - id
+        - name
+      additionalProperties: false
+    SendInvitationInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: >-
+            ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        role:
+          type: string
+          enum:
+            - admin
+            - manager
+            - member
+      required:
+        - email
+        - role
+      additionalProperties: false

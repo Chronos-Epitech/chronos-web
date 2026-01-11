@@ -15,14 +15,6 @@ type TeamUser = {
 
 export default async function Page() {
   let teamMembers: TeamUser[] = [];
-  let teamMembers: Array<{
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-    role: string;
-    avatarUrl: string | null;
-  }> = [];
 
   // Récupération du profil utilisateur depuis Supabase
   let userProfile: Tables<"users"> | null = null;
@@ -76,7 +68,6 @@ export default async function Page() {
             role: membersData.manager.role,
             avatarUrl: membersData.manager.avatarUrl,
           },
-          // Typage explicite de `user` pour éviter `any`
           ...(membersData.users?.map((user: TeamUser) => ({
             id: user.id,
             firstName: user.firstName,
@@ -85,23 +76,6 @@ export default async function Page() {
             role: user.role,
             avatarUrl: user.avatarUrl,
           })) || []),
-          ...membersData.users.map(
-            (user: {
-              id: string;
-              firstName: string | null;
-              lastName: string | null;
-              email: string | null;
-              role: string;
-              avatarUrl: string | null;
-            }) => ({
-              id: user.id,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-              role: user.role,
-              avatarUrl: user.avatarUrl,
-            }),
-          ),
         ];
         teamMembers = allMembers;
       }
@@ -120,6 +94,5 @@ export default async function Page() {
       userProfile={userProfile}
       teamId={teamId}
     />
-    <TeamBoardClient teamMembers={teamMembers} userProfile={userProfile} />
   );
 }
