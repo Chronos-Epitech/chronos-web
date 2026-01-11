@@ -3,7 +3,18 @@ import { TRPCError } from "@trpc/server";
 import type { Tables } from "@chronos/types";
 import TeamBoardClient from "@/components/ui/team-board-client";
 
+// Définir le type User pour l'équipe
+type TeamUser = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  role: string;
+  avatarUrl: string | null;
+};
+
 export default async function Page() {
+  let teamMembers: TeamUser[] = [];
   let teamMembers: Array<{
     id: string;
     firstName: string | null;
@@ -39,7 +50,6 @@ export default async function Page() {
   let teamId: string | null = null;
   try {
     const teams = await trpc.team.getAll.query();
-    // Prendre la première équipe pour l'instant (à améliorer selon votre logique)
     teamId = teams?.[0]?.id || null;
   } catch (error) {
     if (error instanceof TRPCError && error.code === "FORBIDDEN") {
@@ -57,7 +67,7 @@ export default async function Page() {
       });
       if (membersData) {
         // Inclure le manager dans la liste des membres
-        const allMembers = [
+        const allMembers: TeamUser[] = [
           {
             id: membersData.manager.id,
             firstName: membersData.manager.firstName,
@@ -66,6 +76,15 @@ export default async function Page() {
             role: membersData.manager.role,
             avatarUrl: membersData.manager.avatarUrl,
           },
+          // Typage explicite de `user` pour éviter `any`
+          ...(membersData.users?.map((user: TeamUser) => ({
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            role: user.role,
+            avatarUrl: user.avatarUrl,
+          })) || []),
           ...membersData.users.map(
             (user: {
               id: string;
@@ -96,6 +115,11 @@ export default async function Page() {
   }
 
   return (
+    <TeamBoardClient
+      teamMembers={teamMembers}
+      userProfile={userProfile}
+      teamId={teamId}
+    />
     <TeamBoardClient teamMembers={teamMembers} userProfile={userProfile} />
   );
 }
