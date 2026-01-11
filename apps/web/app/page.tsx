@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/buttons/button";
 import { redirect } from "next/navigation";
 
 export default function HomePage() {

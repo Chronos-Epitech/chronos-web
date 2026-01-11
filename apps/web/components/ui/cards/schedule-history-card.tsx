@@ -1,6 +1,11 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/cards/card";
 import type { Tables } from "@chronos/types";
 
 type Props = {

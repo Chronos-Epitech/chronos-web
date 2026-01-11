@@ -3,15 +3,19 @@ import { useTrpcClient } from "@/trpc/client";
 import * as React from "react";
 import { z } from "zod";
 import type { Tables, Team } from "@chronos/types";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/buttons/button";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/components/ui/images/avatar";
 import { SignedIn, UserButton, UserProfile, useClerk } from "@clerk/nextjs";
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/ui/app-sidebar";
+} from "@/components/ui/sidebar/sidebar";
+import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 import {
   Card,
   CardContent,
@@ -19,14 +23,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/cards/card";
 import { toast } from "sonner";
 import Image from "next/image";
 import { formatDurationSince } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
-import { ScheduleHistoryCard } from "@/components/ui/schedule-history-card";
-import KpiWorkingHoursDone from "@/components/ui/kpi-working-hours-done";
-import { KpiLateMember } from "@/components/ui/kpi-late";
+import { ScheduleHistoryCard } from "@/components/ui/cards/schedule-history-card";
+import KpiWorkingHoursDone from "@/components/ui/kpi/kpi-working-hours-done";
+import { KpiLateMember } from "@/components/ui/kpi/kpi-late";
 
 import { ScheduleAreaChartCard } from "@/components/charts/schedule-area-chart-card";
 
