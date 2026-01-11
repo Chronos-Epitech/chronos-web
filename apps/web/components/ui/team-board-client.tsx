@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import type { Tables } from "@chronos/types";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { Separator } from "@/components/ui/separator";
-import type { Tables } from "@chronos/types";
-import { MoreHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MoreHorizontal, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -12,7 +13,10 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-import { useState } from "react";
+import KpiWorkingHoursDoneTeam from "@/components/ui/kpi-working-hours-done-team";
+import KpiLateTeam from "@/components/ui/kpi-late-team";
+import KpiWorkingHoursDone from "@/components/ui/kpi-working-hours-done";
+import { KpiLateMember } from "@/components/ui/kpi-late";
 import { useTrpcClient } from "@/trpc/client";
 
 interface TeamMember {
@@ -40,24 +44,73 @@ export default function TeamBoardClient({
   const authorization =
     userProfile?.role === "manager" || userProfile?.role === "admin";
 
-  // 🔥 Liste locale pour refresh instantané
-  const [members, setMembers] = useState(teamMembers);
+  /* ---------------- KPI LOGIC (LEFT SIDE) ---------------- */
 
+  const [period, setPeriod] = useState<"week" | "month" | "year">("week");
+  const [schedules, setSchedules] = useState<Tables<"schedules">[]>([]);
+
+  useEffect(() => {
+    async function loadTeamSchedules() {
+      const allSchedules: Tables<"schedules">[] = [];
+
+      for (const member of teamMembers) {
+        try {
+          const memberSchedules = await trpc.schedule.getByUserId.query({
+            userId: member.id,
+          });
+
+          if (Array.isArray(memberSchedules)) {
+            allSchedules.push(...memberSchedules);
+          }
+        } catch (err) {
+          console.warn(`Failed to load schedules for ${member.id}`, err);
+        }
+      }
+
+      setSchedules(allSchedules);
+    }
+
+    if (teamMembers.length > 0) {
+      loadTeamSchedules();
+    }
+  }, [trpc, teamMembers]);
+
+  /* ---------------- TEAM MEMBERS (RIGHT SIDE) ---------------- */
+
+  const [members, setMembers] = useState(teamMembers);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [selectedMemberSchedules, setSelectedMemberSchedules] = useState<
+    Tables<"schedules">[]
+  >([]);
+  const [popupPeriod, setPopupPeriod] = useState<"week" | "month" | "year">(
+    "week",
+  );
 
-  const openPopup = (member: TeamMember) => {
+  const openPopup = async (member: TeamMember) => {
     if (!authorization) return;
     setSelectedMember(member);
     setShowPopup(true);
+
+    // Load schedules for the selected member
+    try {
+      const memberSchedules = await trpc.schedule.getByUserId.query({
+        userId: member.id,
+      });
+      setSelectedMemberSchedules(
+        Array.isArray(memberSchedules) ? memberSchedules : [],
+      );
+    } catch (err) {
+      console.warn(`Failed to load schedules for ${member.id}`, err);
+      setSelectedMemberSchedules([]);
+    }
   };
 
   const closePopup = () => {
-    setShowPopup(false);
     setSelectedMember(null);
+    setShowPopup(false);
   };
 
-  // 🔥 DELETE instantané (optimistic update)
   const handleDelete = async (member: TeamMember) => {
     setMembers((prev) => prev.filter((m) => m.id !== member.id));
 
@@ -69,52 +122,64 @@ export default function TeamBoardClient({
     } catch (err) {
       console.error(err);
       alert("Erreur lors de la suppression");
-
-      // Restaure si erreur
       setMembers((prev) => [...prev, member]);
     }
   };
 
-  const handleEdit = (member: TeamMember) => {
+  const handleEdit = () => {
     alert("Fonction Edit à implémenter");
   };
 
   return (
     <div className="flex flex-row h-full relative">
-      {/* LEFT SIDE — KPI (SUPPRIMÉ MAIS ESPACE CONSERVÉ) */}
+      {/* LEFT SIDE — KPI */}
       <div className="flex flex-col h-full w-1/3 min-w-[300px] p-4">
-        {/* KPI supprimés */}
+        <div className="flex items-center justify-between gap-3">
+          <HeaderTitle title="Teams Statistics" />
+          <div className="flex gap-2">
+            {["week", "month", "year"].map((p) => (
+              <Button
+                key={p}
+                size="sm"
+                variant={period === p ? "default" : "outline"}
+                onClick={() => setPeriod(p as any)}
+              >
+                {p}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 mt-4">
+          <KpiWorkingHoursDoneTeam
+            schedules={schedules}
+            includeOpenShiftUntilNow={false}
+            period={period}
+          />
+          <KpiLateTeam
+            schedules={schedules}
+            toleranceMinutes={0}
+            period={period}
+          />
+        </div>
       </div>
 
-      <Separator className="p-1" orientation="vertical" />
+      <Separator orientation="vertical" />
 
       {/* RIGHT SIDE — TABLE */}
       <div className="flex flex-col h-full w-2/3 p-4">
-        <HeaderTitle title="Team Members" className="w-full mb-4" />
+        <HeaderTitle title="Team Members" className="mb-4" />
 
         <div className="flex-1 overflow-auto rounded-xl shadow bg-card p-4">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-left text-muted-foreground">
+              <tr className="border-b text-muted-foreground text-left">
                 <th className="py-2 px-3">Prénom</th>
                 <th className="py-2 px-3">Nom</th>
                 <th className="py-2 px-3">Email</th>
                 <th className="py-2 px-3">Rôle</th>
-
                 {authorization && (
-                  <th className="py-2 px-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      Actions
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 p-0"
-                        onClick={() => console.log("Add member")}
-                      >
-                        <span className="text-xl font-bold">+</span>
-                      </Button>
-                    </div>
-                  </th>
+                  <th className="py-2 px-3 text-right">Actions</th>
                 )}
               </tr>
             </thead>
@@ -123,10 +188,8 @@ export default function TeamBoardClient({
               {members.map((member) => (
                 <tr
                   key={member.id}
-                  className={`border-b transition ${
-                    authorization
-                      ? "hover:bg-muted/30 cursor-pointer"
-                      : "cursor-default"
+                  className={`border-b ${
+                    authorization ? "hover:bg-muted/30 cursor-pointer" : ""
                   }`}
                   onClick={() => openPopup(member)}
                 >
@@ -142,20 +205,14 @@ export default function TeamBoardClient({
                     >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 p-0"
-                          >
+                          <Button variant="ghost" size="icon">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(member)}>
+                          <DropdownMenuItem onClick={handleEdit}>
                             Edit
                           </DropdownMenuItem>
-
                           <DropdownMenuItem
                             className="text-red-600"
                             onClick={() => handleDelete(member)}
@@ -180,21 +237,47 @@ export default function TeamBoardClient({
           onClick={closePopup}
         >
           <div
-            className="bg-white dark:bg-neutral-900 rounded-xl shadow-xl p-6 w-[350px] relative"
+            className="bg-white dark:bg-neutral-900 rounded-xl p-6 w-[600px] max-h-[90vh] overflow-y-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-              onClick={closePopup}
-            >
-              <X className="h-5 w-5" />
+            <button className="absolute top-3 right-3" onClick={closePopup}>
+              <X />
             </button>
 
-            <h2 className="text-xl font-semibold mb-2">
+            <h2 className="text-xl font-semibold mb-4">
               {selectedMember.firstName} {selectedMember.lastName}
             </h2>
 
-            <p className="text-muted-foreground text-sm">(Contenu à venir)</p>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <span className="text-sm text-muted-foreground">Période</span>
+              <div className="flex gap-2">
+                {["week", "month", "year"].map((p) => (
+                  <Button
+                    key={p}
+                    size="sm"
+                    variant={popupPeriod === p ? "default" : "outline"}
+                    onClick={() =>
+                      setPopupPeriod(p as "week" | "month" | "year")
+                    }
+                  >
+                    {p}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <KpiWorkingHoursDone
+                schedules={selectedMemberSchedules}
+                includeOpenShiftUntilNow={false}
+                period={popupPeriod}
+              />
+              <KpiLateMember
+                schedules={selectedMemberSchedules}
+                toleranceMinutes={0}
+                period={popupPeriod}
+              />
+            </div>
           </div>
         </div>
       )}
