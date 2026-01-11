@@ -44,14 +44,16 @@ export default function TeamBoardClient({
   const authorization =
     userProfile?.role === "manager" || userProfile?.role === "admin";
 
-  /* ---------------- KPI LOGIC (LEFT SIDE) ---------------- */
+  /* ---------------- TEAM KPI (LEFT) ---------------- */
 
   const [period, setPeriod] = useState<"week" | "month" | "year">("week");
-  const [schedules, setSchedules] = useState<Tables<"schedules">[]>([]);
+  const [schedules, setSchedules] = useState<
+    (Tables<"schedules"> & { user_id: string })[]
+  >([]);
 
   useEffect(() => {
     async function loadTeamSchedules() {
-      const allSchedules: Tables<"schedules">[] = [];
+      const all: (Tables<"schedules"> & { user_id: string })[] = [];
 
       for (const member of teamMembers) {
         try {
@@ -60,14 +62,19 @@ export default function TeamBoardClient({
           });
 
           if (Array.isArray(memberSchedules)) {
-            allSchedules.push(...memberSchedules);
+            all.push(
+              ...memberSchedules.map((s) => ({
+                ...s,
+                user_id: member.id,
+              })),
+            );
           }
         } catch (err) {
           console.warn(`Failed to load schedules for ${member.id}`, err);
         }
       }
 
-      setSchedules(allSchedules);
+      setSchedules(all);
     }
 
     if (teamMembers.length > 0) {
@@ -75,24 +82,24 @@ export default function TeamBoardClient({
     }
   }, [trpc, teamMembers]);
 
-  /* ---------------- TEAM MEMBERS (RIGHT SIDE) ---------------- */
+  /* ---------------- TEAM MEMBERS (RIGHT) ---------------- */
 
   const [members, setMembers] = useState(teamMembers);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
-  const [showPopup, setShowPopup] = useState(false);
   const [selectedMemberSchedules, setSelectedMemberSchedules] = useState<
     Tables<"schedules">[]
   >([]);
   const [popupPeriod, setPopupPeriod] = useState<"week" | "month" | "year">(
     "week",
   );
+  const [showPopup, setShowPopup] = useState(false);
 
   const openPopup = async (member: TeamMember) => {
     if (!authorization) return;
+
     setSelectedMember(member);
     setShowPopup(true);
 
-    // Load schedules for the selected member
     try {
       const memberSchedules = await trpc.schedule.getByUserId.query({
         userId: member.id,
@@ -100,15 +107,14 @@ export default function TeamBoardClient({
       setSelectedMemberSchedules(
         Array.isArray(memberSchedules) ? memberSchedules : [],
       );
-    } catch (err) {
-      console.warn(`Failed to load schedules for ${member.id}`, err);
+    } catch {
       setSelectedMemberSchedules([]);
     }
   };
 
   const closePopup = () => {
-    setSelectedMember(null);
     setShowPopup(false);
+    setSelectedMember(null);
   };
 
   const handleDelete = async (member: TeamMember) => {
@@ -119,22 +125,16 @@ export default function TeamBoardClient({
         team_id: teamId!,
         user_id: member.id,
       });
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de la suppression");
+    } catch {
       setMembers((prev) => [...prev, member]);
     }
   };
 
-  const handleEdit = () => {
-    alert("Fonction Edit à implémenter");
-  };
-
   return (
-    <div className="flex flex-row h-full relative">
-      {/* LEFT SIDE — KPI */}
-      <div className="flex flex-col h-full w-1/3 min-w-[300px] p-4">
-        <div className="flex items-center justify-between gap-3">
+    <div className="flex h-full">
+      {/* LEFT — KPI */}
+      <div className="w-1/3 min-w-[300px] p-4">
+        <div className="flex justify-between items-center">
           <HeaderTitle title="Teams Statistics" />
           <div className="flex gap-2">
             {["week", "month", "year"].map((p) => (
@@ -150,7 +150,7 @@ export default function TeamBoardClient({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 mt-4">
+        <div className="grid gap-4 mt-4">
           <KpiWorkingHoursDoneTeam
             schedules={schedules}
             includeOpenShiftUntilNow={false}
@@ -166,37 +166,32 @@ export default function TeamBoardClient({
 
       <Separator orientation="vertical" />
 
-      {/* RIGHT SIDE — TABLE */}
-      <div className="flex flex-col h-full w-2/3 p-4">
+      {/* RIGHT — TABLE */}
+      <div className="w-2/3 p-4">
         <HeaderTitle title="Team Members" className="mb-4" />
 
-        <div className="flex-1 overflow-auto rounded-xl shadow bg-card p-4">
+        <div className="bg-card rounded-xl p-4 overflow-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-muted-foreground text-left">
+              <tr className="border-b text-muted-foreground">
                 <th className="py-2 px-3">Prénom</th>
                 <th className="py-2 px-3">Nom</th>
                 <th className="py-2 px-3">Email</th>
                 <th className="py-2 px-3">Rôle</th>
-                {authorization && (
-                  <th className="py-2 px-3 text-right">Actions</th>
-                )}
+                {authorization && <th className="py-2 px-3 text-right" />}
               </tr>
             </thead>
-
             <tbody>
-              {members.map((member) => (
+              {members.map((m) => (
                 <tr
-                  key={member.id}
-                  className={`border-b ${
-                    authorization ? "hover:bg-muted/30 cursor-pointer" : ""
-                  }`}
-                  onClick={() => openPopup(member)}
+                  key={m.id}
+                  className="border-b hover:bg-muted/30 cursor-pointer"
+                  onClick={() => openPopup(m)}
                 >
-                  <td className="py-2 px-3">{member.firstName}</td>
-                  <td className="py-2 px-3">{member.lastName}</td>
-                  <td className="py-2 px-3">{member.email}</td>
-                  <td className="py-2 px-3 capitalize">{member.role}</td>
+                  <td className="py-2 px-3">{m.firstName}</td>
+                  <td className="py-2 px-3">{m.lastName}</td>
+                  <td className="py-2 px-3">{m.email}</td>
+                  <td className="py-2 px-3 capitalize">{m.role}</td>
 
                   {authorization && (
                     <td
@@ -206,16 +201,14 @@ export default function TeamBoardClient({
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
+                            <MoreHorizontal />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={handleEdit}>
-                            Edit
-                          </DropdownMenuItem>
+                          <DropdownMenuItem>Edit</DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-600"
-                            onClick={() => handleDelete(member)}
+                            onClick={() => handleDelete(m)}
                           >
                             Delete
                           </DropdownMenuItem>
@@ -233,14 +226,14 @@ export default function TeamBoardClient({
       {/* POPUP */}
       {authorization && showPopup && selectedMember && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/40 flex items-center justify-center"
           onClick={closePopup}
         >
           <div
-            className="bg-white dark:bg-neutral-900 rounded-xl p-6 w-[600px] max-h-[90vh] overflow-y-auto relative"
+            className="bg-background rounded-xl p-6 w-[600px]"
             onClick={(e) => e.stopPropagation()}
           >
-            <button className="absolute top-3 right-3" onClick={closePopup}>
+            <button className="absolute top-4 right-4" onClick={closePopup}>
               <X />
             </button>
 
@@ -248,25 +241,20 @@ export default function TeamBoardClient({
               {selectedMember.firstName} {selectedMember.lastName}
             </h2>
 
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <span className="text-sm text-muted-foreground">Période</span>
-              <div className="flex gap-2">
-                {["week", "month", "year"].map((p) => (
-                  <Button
-                    key={p}
-                    size="sm"
-                    variant={popupPeriod === p ? "default" : "outline"}
-                    onClick={() =>
-                      setPopupPeriod(p as "week" | "month" | "year")
-                    }
-                  >
-                    {p}
-                  </Button>
-                ))}
-              </div>
+            <div className="flex gap-2 mb-4">
+              {["week", "month", "year"].map((p) => (
+                <Button
+                  key={p}
+                  size="sm"
+                  variant={popupPeriod === p ? "default" : "outline"}
+                  onClick={() => setPopupPeriod(p as any)}
+                >
+                  {p}
+                </Button>
+              ))}
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid gap-4">
               <KpiWorkingHoursDone
                 schedules={selectedMemberSchedules}
                 includeOpenShiftUntilNow={false}

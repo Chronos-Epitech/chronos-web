@@ -68,7 +68,6 @@ export default async function Page() {
             role: membersData.manager.role,
             avatarUrl: membersData.manager.avatarUrl,
           },
-          // Typage explicite de `user` pour éviter `any`
           ...(membersData.users?.map((user: TeamUser) => ({
             id: user.id,
             firstName: user.firstName,

@@ -22,6 +22,7 @@ This project is structured as a monorepo with the following components:
 - **Type Safety**: Shared Zod schemas and generated Supabase types
 - **UI Components**: shadcn/ui with Tailwind CSS
 - **Package Manager**: Bun
+- **Monorepo**: Turborepo for task orchestration and caching
 - **Deployment**: Docker
 
 ## Getting Started
@@ -32,17 +33,45 @@ First, install dependencies using [bun](https://bun.sh):
 bun install
 ```
 
-Then, run the development servers:
+Then, start all development servers using Turborepo:
 
 ```bash
-# Start the API server
-bun --filter @chronos/api dev
-
-# Start the web application (in another terminal)
-bun --filter @chronos/web dev
+# Start all services (API + Web) in parallel
+bun dev
 ```
 
-The web application will be available at [http://localhost:3000](http://localhost:3000).
+This will start:
+
+- **API Server** at [http://localhost:3001](http://localhost:3001)
+- **Web Application** at [http://localhost:3000](http://localhost:3000)
+
+### Running Individual Services
+
+You can also run individual services using Turborepo filters:
+
+```bash
+# Start only the API server
+bunx turbo dev --filter=@chronos/api
+
+# Start only the web application
+bunx turbo dev --filter=@chronos/web
+```
+
+### Other Available Commands
+
+```bash
+# Build all packages
+bun run build
+
+# Run linting across all packages
+bun run lint
+
+# Start production servers
+bun run start
+
+# Run API tests (requires API server to be running)
+bun run test:api
+```
 
 ## API Documentation
 
@@ -54,6 +83,76 @@ The API server provides both tRPC and REST endpoints:
 - **OpenAPI Spec**: Available at `http://localhost:3001/openapi.json`
 
 The REST API is automatically generated from tRPC procedures using the `trpc-to-openapi` extension, providing full OpenAPI compliance with automatic Swagger documentation.
+
+## API Testing
+
+This project uses [StepCI](https://stepci.com/) for automated API testing. StepCI is a modern API testing tool that validates REST endpoints, schemas, and workflows.
+
+### Running API Tests
+
+Make sure the API server is running first, then run the tests with your authentication token:
+
+```bash
+# Start the API server
+bun dev
+
+# In another terminal, run the API tests with your auth token
+AUTH_TOKEN="your-clerk-jwt-token-here" bun run test:api
+```
+
+**Alternative way to pass the token:**
+
+```bash
+# Use a local .env.test file
+cp .env.test.example .env.test
+# Edit .env.test and add your token
+source .env.test && bun run test:api
+```
+
+### Test Configuration
+
+The API tests are defined in `workflow.yml` at the root of the project. This file contains:
+
+- **23 test steps** covering all major API endpoints
+- **Automated dependency management** using JSONPath captures to link test steps
+- **Schema validation** ensuring responses match OpenAPI specifications
+- **Authentication** using Bearer tokens for protected endpoints
+
+### Test Coverage
+
+The test suite validates the following API endpoints:
+
+- **Teams**: CRUD operations, member management
+- **Users**: User creation, updates, deletion
+- **Invitations**: Sending and revoking invitations
+- **Schedules**: Schedule management, check-in/check-out workflows
+
+### Test Design Decisions
+
+**Why some tests were modified or removed:**
+
+1. **Team Creation Test**: The original test attempted to create a new team with a manager who might already have a team. Since the business logic enforces that a manager can only have one team, the test was modified to use the existing team for CRUD operations instead of creating a new one. This approach:
+   - Avoids conflicts with existing data
+   - Tests the actual CRUD operations (get, update) which are more important than creation in a test environment
+   - Prevents cascade failures when a manager already has a team
+
+2. **Team Deletion Test**: Removed because deleting teams would break dependent tests that rely on team data (team members, schedules). The workflow uses a single test suite where tests run sequentially and share state through captures.
+
+3. **ID Capturing Strategy**: All tests now use JSONPath captures to extract IDs from responses and use them in subsequent requests. This ensures:
+   - Tests work with real data from the database
+   - No hardcoded test IDs that might not exist
+   - Proper test isolation and data flow
+
+4. **User Dependencies**: User-related tests create a new user with a unique email and strong password, then perform CRUD operations on that user. This avoids conflicts with existing users and ensures the password meets Clerk's security requirements.
+
+### Prerequisites for Testing
+
+Before running tests, ensure:
+
+1. **API server is running** at `http://localhost:3001`
+2. **Valid authentication token** is available (passed via `AUTH_TOKEN` environment variable)
+3. **Database has seed data** including at least one team and manager user
+4. **Clerk is configured** and authentication is working
 
 ## Features
 
@@ -133,12 +232,25 @@ bun run generate:types
 
 This command uses the Supabase CLI to generate TypeScript types directly from your database schema and saves them to `packages/types/src/supabase-types.ts`.
 
+## Turborepo
+
+This project uses [Turborepo](https://turbo.build/) for monorepo task orchestration. Turborepo provides:
+
+- **Parallel Execution**: Runs tasks across workspaces in parallel
+- **Intelligent Caching**: Skips tasks that haven't changed
+- **Task Dependencies**: Automatically handles build order based on workspace dependencies
+- **Graceful Shutdown**: Handles Ctrl+C gracefully for all services
+
+The Turborepo configuration is in `turbo.json`. All tasks respect workspace dependencies and run in the correct order.
+
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [tRPC Documentation](https://trpc.io/docs)
+- [Turborepo Documentation](https://turbo.build/repo/docs)
 - [tRPC OpenAPI Extension](https://github.com/mcampa/trpc-to-openapi)
 - [Fastify Documentation](https://www.fastify.io/docs/latest/)
+- [StepCI Documentation](https://docs.stepci.com/)
 - [Clerk Documentation](https://clerk.com/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [shadcn/ui Documentation](https://ui.shadcn.com/)
