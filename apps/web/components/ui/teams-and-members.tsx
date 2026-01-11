@@ -215,6 +215,26 @@ export default function TeamsAndMembers({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Visible debug panel to confirm props rendered client-side */}
+      <div className="p-3 mb-4 rounded border bg-yellow-50 text-sm">
+        <div className="font-medium text-xs mb-1">DEBUG — teams / members</div>
+        <div>
+          teams: {localTeams.length} — members: {localMembers.length}
+        </div>
+        <details className="mt-2">
+          <summary className="cursor-pointer text-xs text-muted-foreground">
+            Voir les données
+          </summary>
+          <pre className="mt-2 max-h-60 overflow-auto text-xs">
+            {JSON.stringify(
+              { teams: localTeams, members: localMembers },
+              null,
+              2,
+            )}
+          </pre>
+        </details>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Teams</CardTitle>
