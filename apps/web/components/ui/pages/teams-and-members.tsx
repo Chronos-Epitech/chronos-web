@@ -39,7 +39,11 @@ import {
 } from "@/components/ui/sidebar/sidebar";
 import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 import { UserProfile, useClerk, SignedIn, UserButton } from "@clerk/nextjs";
-import { Pencil, Users, MoreHorizontal } from "lucide-react";
+import { Pencil, Users, MoreHorizontal, Trash2, Plus } from "lucide-react";
+import {
+  InviteSheet,
+  InviteSheetTrigger,
+} from "@/components/ui/forms/invite-bar";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -80,6 +84,7 @@ export default function TeamsAndMembers({
   const clerk = useClerk();
   const [showUserProfile, setShowUserProfile] = React.useState(false);
   const [openTeam, setOpenTeam] = React.useState<string | null>(null);
+  const [showInviteSheet, setShowInviteSheet] = React.useState(false);
 
   const [localTeams, setLocalTeams] = React.useState<Team[]>(teams || []);
   const [localMembers, setLocalMembers] = React.useState<Member[]>(
@@ -92,6 +97,14 @@ export default function TeamsAndMembers({
   const [editingTeamName, setEditingTeamName] = React.useState<string>("");
   const [isTeamSheetOpen, setIsTeamSheetOpen] = React.useState(false);
 
+  // create team state
+  const [isCreateTeamSheetOpen, setIsCreateTeamSheetOpen] =
+    React.useState(false);
+  const [newTeamName, setNewTeamName] = React.useState<string>("");
+  const [newTeamManagerId, setNewTeamManagerId] = React.useState<string>("");
+  const [newTeamMemberIds, setNewTeamMemberIds] = React.useState<string[]>([]);
+  const [allUsers, setAllUsers] = React.useState<Member[]>([]);
+
   const [editingMemberId, setEditingMemberId] = React.useState<string | null>(
     null,
   );
@@ -101,17 +114,39 @@ export default function TeamsAndMembers({
   React.useEffect(() => setLocalTeams(teams || []), [teams]);
   React.useEffect(() => setLocalMembers(members || []), [members]);
 
+  // Fetch all users for team creation
+  React.useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const users = await trpc.user.getAll.query();
+        setAllUsers(users as any[]);
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+      }
+    }
+    fetchUsers();
+  }, [trpc]);
+
   function getFirstName(m: any) {
-    return m.firstName ?? m.first_name ?? "";
+    return m.firstName ?? m.first_name ?? m.name?.first ?? "";
   }
   function getLastName(m: any) {
-    return m.lastName ?? m.last_name ?? "";
+    return m.lastName ?? m.last_name ?? m.name?.last ?? "";
   }
   function getEmail(m: any) {
-    return m.email ?? m.email_address ?? "";
+    return (
+      m.email ??
+      m.email_address ??
+      m.emailAddress ??
+      (m.emailAddresses &&
+        m.emailAddresses[0] &&
+        (m.emailAddresses[0].email_address ??
+          m.emailAddresses[0].emailAddress)) ??
+      ""
+    );
   }
   function getRole(m: any) {
-    return m.role ?? "";
+    return m.role ?? m.public_metadata?.role ?? m.publicMetadata?.role ?? "";
   }
 
   const membersByTeam = React.useMemo(() => {
@@ -156,6 +191,67 @@ export default function TeamsAndMembers({
       console.error("Failed to update team:", err);
       toast.error("Erreur", {
         description: "Impossible de mettre à jour l'équipe",
+      });
+    }
+  }
+
+  async function handleCreateTeam() {
+    if (!newTeamName.trim() || !newTeamManagerId) {
+      toast.error("Erreur", {
+        description: "Le nom de l'équipe et le manager sont requis",
+      });
+      return;
+    }
+
+    try {
+      const newTeam = await trpc.team.create.mutate({
+        name: newTeamName,
+        managerId: newTeamManagerId,
+        memberIds: newTeamMemberIds.length > 0 ? newTeamMemberIds : undefined,
+      });
+      setLocalTeams((prev) => [...prev, newTeam as any]);
+      setIsCreateTeamSheetOpen(false);
+      setNewTeamName("");
+      setNewTeamManagerId("");
+      setNewTeamMemberIds([]);
+      toast.success("Équipe créée", {
+        description: `L'équipe ${newTeamName} a été créée avec succès`,
+      });
+    } catch (err) {
+      console.error("Failed to create team:", err);
+      toast.error("Erreur", {
+        description: "Impossible de créer l'équipe",
+      });
+    }
+  }
+
+  async function handleDeleteTeam(team: Team) {
+    const teamMembers = membersByTeam.get(team.id) || [];
+
+    if (
+      !window.confirm(
+        `Êtes-vous sûr de vouloir supprimer l'équipe "${team.name}" ? Cette action est irréversible. ${teamMembers.length > 0 ? `L'équipe contient ${teamMembers.length} membre${teamMembers.length > 1 ? "s" : ""}.` : ""}`,
+      )
+    ) {
+      return;
+    }
+
+    const previousTeams = [...localTeams];
+
+    // Optimistic update
+    setLocalTeams((prev) => prev.filter((t) => t.id !== team.id));
+
+    try {
+      await trpc.team.delete.mutate({ id: team.id });
+      toast.success("Équipe supprimée", {
+        description: `L'équipe ${team.name} a été supprimée avec succès`,
+      });
+    } catch (err) {
+      // Rollback on error
+      setLocalTeams(previousTeams);
+      console.error("Failed to delete team:", err);
+      toast.error("Erreur", {
+        description: "Impossible de supprimer l'équipe",
       });
     }
   }
@@ -240,6 +336,40 @@ export default function TeamsAndMembers({
     }
   }
 
+  async function handleDeleteUser(member: Member) {
+    const memberName =
+      `${getFirstName(member) || ""} ${getLastName(member) || ""}`.trim() ||
+      getEmail(member) ||
+      "cet utilisateur";
+
+    if (
+      !window.confirm(
+        `Êtes-vous sûr de vouloir supprimer ${memberName} ? Cette action est irréversible.`,
+      )
+    ) {
+      return;
+    }
+
+    const previousMembers = [...localMembers];
+
+    // Optimistic update
+    setLocalMembers((prev) => prev.filter((m) => m.id !== member.id));
+
+    try {
+      await trpc.user.delete.mutate({ id: member.id });
+      toast.success("Utilisateur supprimé", {
+        description: `${memberName} a été supprimé avec succès`,
+      });
+    } catch (err) {
+      // Rollback on error
+      setLocalMembers(previousMembers);
+      console.error("Failed to delete user:", err);
+      toast.error("Erreur", {
+        description: "Impossible de supprimer l'utilisateur",
+      });
+    }
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar
@@ -276,8 +406,20 @@ export default function TeamsAndMembers({
             <div className="mx-auto flex w-full max-w-[1800px] gap-4 lg:gap-6 h-full">
               {/* Teams Section - Left */}
               <div className="flex-1 min-w-0 flex flex-col">
-                <div className="mb-2">
+                <div className="mb-2 flex items-center justify-between gap-2">
                   <h2 className="text-lg font-semibold">Équipes</h2>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsCreateTeamSheetOpen(true)}
+                      className="gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Ajouter
+                    </Button>
+                    <InviteSheetTrigger onOpenChange={setShowInviteSheet} />
+                  </div>
                 </div>
                 <Card className="flex-1 flex flex-col min-h-0">
                   <CardContent className="flex-1 p-3 overflow-y-auto">
@@ -310,6 +452,14 @@ export default function TeamsAndMembers({
                                   className="h-7 px-2"
                                 >
                                   <Pencil className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteTeam(team)}
+                                  className="h-7 px-2 text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                                 <Button
                                   size="sm"
@@ -365,14 +515,24 @@ export default function TeamsAndMembers({
                                           {getRole(m)}
                                         </div>
                                       </div>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() => openEditMember(m.id)}
-                                        className="h-6 px-1.5"
-                                      >
-                                        <Pencil className="h-3 w-3" />
-                                      </Button>
+                                      <div className="flex gap-1">
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => openEditMember(m.id)}
+                                          className="h-6 px-1.5"
+                                        >
+                                          <Pencil className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => handleDeleteUser(m)}
+                                          className="h-6 px-1.5 text-destructive hover:text-destructive"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
                                     </div>
                                   ))
                                 )}
@@ -435,14 +595,24 @@ export default function TeamsAndMembers({
                                   {getRole(m)}
                                 </div>
                               </div>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => openEditMember(m.id)}
-                                className="h-7 px-2"
-                              >
-                                <Pencil className="h-3 w-3" />
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => openEditMember(m.id)}
+                                  className="h-7 px-2"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteUser(m)}
+                                  className="h-7 px-2 text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -730,6 +900,146 @@ export default function TeamsAndMembers({
             </SheetFooter>
           </SheetContent>
         </Sheet>
+
+        {/* Create Team Sheet */}
+        <Sheet
+          open={isCreateTeamSheetOpen}
+          onOpenChange={setIsCreateTeamSheetOpen}
+        >
+          <SheetContent side="right" className="w-full sm:max-w-md p-6">
+            <SheetHeader className="mb-6">
+              <SheetTitle>Créer une équipe</SheetTitle>
+              <SheetDescription>
+                Créez une nouvelle équipe avec un manager et des membres
+                optionnels
+              </SheetDescription>
+            </SheetHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Nom de l'équipe
+                </label>
+                <Input
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  placeholder="Nom de l'équipe"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Manager <span className="text-destructive">*</span>
+                </label>
+                <Select
+                  value={newTeamManagerId}
+                  onValueChange={setNewTeamManagerId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un utilisateur" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allUsers.length === 0 ? (
+                      <SelectItem value="__loading__" disabled>
+                        Chargement...
+                      </SelectItem>
+                    ) : allUsers.filter((u) => getRole(u) === "manager")
+                        .length === 0 ? (
+                      <SelectItem value="__no_manager__" disabled>
+                        Aucun manager disponible
+                      </SelectItem>
+                    ) : (
+                      allUsers
+                        .filter((u) => getRole(u) === "manager")
+                        .map((u) => {
+                          const firstName = getFirstName(u);
+                          const lastName = getLastName(u);
+                          const email = getEmail(u);
+                          const displayName =
+                            `${firstName || ""} ${lastName || ""}`.trim() ||
+                            email ||
+                            "Manager";
+                          return (
+                            <SelectItem key={u.id} value={u.id}>
+                              {displayName} {email ? `— ${email}` : ""}
+                            </SelectItem>
+                          );
+                        })
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Membres (optionnel)
+                </label>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto border rounded-lg p-2">
+                  {allUsers
+                    .filter((u) => u.id !== newTeamManagerId)
+                    .map((u) => (
+                      <div
+                        key={u.id}
+                        className="flex items-center gap-2 p-2 hover:bg-muted/50 rounded"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={newTeamMemberIds.includes(u.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setNewTeamMemberIds((prev) => [...prev, u.id]);
+                            } else {
+                              setNewTeamMemberIds((prev) =>
+                                prev.filter((id) => id !== u.id),
+                              );
+                            }
+                          }}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">
+                            {getFirstName(u)} {getLastName(u)}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {getEmail(u)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  {allUsers.filter(
+                    (u) =>
+                      getRole(u) !== "manager" && u.id !== newTeamManagerId,
+                  ).length === 0 && (
+                    <p className="text-sm text-muted-foreground py-2 text-center">
+                      Aucun membre disponible
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <SheetFooter className="mt-6">
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsCreateTeamSheetOpen(false);
+                    setNewTeamName("");
+                    setNewTeamManagerId("");
+                    setNewTeamMemberIds([]);
+                  }}
+                  className="flex-1"
+                >
+                  Annuler
+                </Button>
+                <Button onClick={handleCreateTeam} className="flex-1">
+                  Créer
+                </Button>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
+        {/* Invite Sheet */}
+        <InviteSheet open={showInviteSheet} onOpenChange={setShowInviteSheet} />
       </SidebarInset>
     </SidebarProvider>
   );
