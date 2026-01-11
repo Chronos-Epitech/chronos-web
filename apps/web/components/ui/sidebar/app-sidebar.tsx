@@ -52,12 +52,11 @@ export function AppSidebar({
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton
-                tooltip="Équipes et membres"
-                onClick={() => router.push("/teams-and-members")}
-              >
-                <Users />
-                <span>Équipes et membres</span>
+              <SidebarMenuButton tooltip="Équipes et membres" asChild>
+                <Link href="/teams-and-members">
+                  <Users />
+                  <span>Équipes et membres</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 

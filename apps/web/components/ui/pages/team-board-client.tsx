@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/elements/dropdown-menu";
 import Image from "next/image";
 
 import KpiWorkingHoursDoneTeam from "@/components/ui/kpi/kpi-working-hours-done-team";

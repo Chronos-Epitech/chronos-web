@@ -3,25 +3,15 @@ import { useTrpcClient } from "@/trpc/client";
 import * as React from "react";
 import { z } from "zod";
 import type { Tables, Team } from "@chronos/types";
-import { Button } from "@/components/ui/button";
 
 import { SignedIn, UserButton } from "@clerk/nextjs";
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/ui/app-sidebar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarWeek } from "@/components/ui/calendar-week";
+} from "@/components/ui/sidebar/sidebar";
+import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
+
 import Image from "next/image";
 import AdminSidePanel from "@/components/ui/admin-side-panel";
 import { usePathname } from "next/navigation";
@@ -92,29 +82,6 @@ export default function DashboardAdmin({
                   <AdminSidePanel teams={teams} userProfile={userProfile} />
                 </div>
               )}
-
-              {/* right screen */}
-              <div className="w-full flex flex-col lg:flex-1">
-                {children ? (
-                  <div className="w-full">{children}</div>
-                ) : mode === "week" ? (
-                  <CalendarWeek
-                    selectedDate={date}
-                    onSelect={setDate}
-                    className="rounded-xl border border-border/70 w-full bg-card"
-                    mode={mode}
-                    onModeChange={setMode}
-                  />
-                ) : (
-                  <Calendar
-                    selectedDate={date}
-                    onSelect={setDate}
-                    className="rounded-xl border border-border/70 w-full h-[680px] bg-card"
-                    mode={mode}
-                    onModeChange={setMode}
-                  />
-                )}
-              </div>
             </div>
           </div>
         </div>

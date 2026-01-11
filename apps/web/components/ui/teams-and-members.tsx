@@ -7,11 +7,15 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "./card";
-import { Button } from "./button";
-import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
-import { Separator } from "./separator";
-import { Input } from "./input";
+} from "@/components/ui/cards/card";
+import { Button } from "@/components/ui/buttons/button";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/components/ui/images/avatar";
+import { Separator } from "@/components/ui/elements/separator";
+import { Input } from "@/components/ui/elements/input";
 import {
   Sheet,
   SheetContent,
@@ -19,7 +23,7 @@ import {
   SheetTitle,
   SheetDescription,
   SheetFooter,
-} from "./sheet";
+} from "@/components/ui/elements/sheet";
 import { useTrpcClient } from "@/trpc/client";
 
 type Team = {
@@ -47,6 +51,19 @@ export default function TeamsAndMembers({
   teams,
   members,
 }: TeamsAndMembersProps) {
+  // debug: always log incoming props and continue rendering so we can see
+  // whether data arrives in the client component
+  React.useEffect(() => {
+    console.log(
+      "TeamsAndMembers props (client): teams.length=",
+      teams?.length,
+      "members.length=",
+      members?.length,
+      { teams, members },
+    );
+  }, [teams, members]);
+
+  // render even if empty to avoid hiding UI silently
   const [openTeam, setOpenTeam] = React.useState<string | null>(null);
 
   const [localTeams, setLocalTeams] = React.useState<Team[]>(teams || []);

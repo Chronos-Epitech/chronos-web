@@ -1,7 +1,7 @@
 import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
 import type { Tables } from "@chronos/types";
-import TeamBoardClient from "@/components/ui/team-board-client";
+import TeamBoardClient from "@/components/ui/pages/team-board-client";
 
 // Définir le type User pour l'équipe
 type TeamUser = {

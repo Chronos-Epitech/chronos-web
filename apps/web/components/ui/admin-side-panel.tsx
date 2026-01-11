@@ -3,8 +3,12 @@ import { useTrpcClient } from "@/trpc/client";
 import * as React from "react";
 import { z } from "zod";
 import type { Tables, Team } from "@chronos/types";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/buttons/button";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/components/ui/images/avatar";
 import { SignedIn, UserButton, UserProfile, useClerk } from "@clerk/nextjs";
 import {
   Card,
@@ -13,14 +17,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/cards/card";
 import { toast } from "sonner";
-import Image from "next/image";
 import { formatDurationSince } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
-import { ScheduleHistoryCard } from "@/components/ui/schedule-history-card";
-import { ScheduleAreaChartCard } from "@/components/charts/schedule-area-chart-card";
-
+import { ScheduleHistoryCard } from "@/components/ui/cards/schedule-history-card";
 export default function AdminSidePanel({
   teams,
   userProfile,
@@ -252,13 +253,6 @@ export default function AdminSidePanel({
       </Card>
 
       <ScheduleHistoryCard schedules={schedules} />
-
-      <ScheduleAreaChartCard
-        schedules={schedules}
-        mode={mode}
-        onModeChange={setMode}
-        selectedDate={date}
-      />
 
       {showUserProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
