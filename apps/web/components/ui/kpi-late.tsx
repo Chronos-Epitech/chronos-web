@@ -194,19 +194,19 @@ export function KpiLateMember({
   }, [schedules, toleranceMinutes, period]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Arrivées en retard</CardTitle>
-        <CardDescription>
+    <Card className="h-full flex flex-col py-4 gap-4">
+      <CardHeader className="py-2 px-4">
+        <CardTitle className="text-sm">Arrivées en retard</CardTitle>
+        <CardDescription className="text-xs">
           Total des minutes d&apos;arrivée en retard {period && `(${period})`}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-2">
-          <div className="text-3xl font-semibold">
+      <CardContent className="flex-1 px-4 py-2">
+        <div className="flex flex-col gap-1">
+          <div className="text-2xl font-semibold">
             {formatHoursAndMinutesFromMinutes(totalLateMinutes)}
           </div>
-          <div className="text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             {totalLateMinutes} minutes — {totalLateCount} arrivées en retard
           </div>
         </div>

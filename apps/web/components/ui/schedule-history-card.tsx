@@ -10,11 +10,11 @@ type Props = {
 export function ScheduleHistoryCard({ schedules }: Props) {
   if (!schedules.length) {
     return (
-      <Card>
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle>Historique</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
+        <CardContent className="flex-1 text-sm text-muted-foreground">
           Aucun pointage enregistré.
         </CardContent>
       </Card>
@@ -22,12 +22,12 @@ export function ScheduleHistoryCard({ schedules }: Props) {
   }
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle>Historique des pointages</CardTitle>
       </CardHeader>
 
-      <CardContent className="max-h-[285px] overflow-y-auto space-y-2">
+      <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-2">
         {schedules.map((schedule) => {
           const date = new Date(schedule.created_at);
           const isCheckIn = schedule.type === "check_in";
