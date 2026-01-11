@@ -39,9 +39,12 @@ export function AppSidebar({ onSettingsClick }: AppSidebarProps = {}) {
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Équipes">
+              <SidebarMenuButton
+                tooltip="Équipes et membres"
+                onClick={() => router.push("/teams-and-members")}
+              >
                 <Users />
-                <span>Équipes</span>
+                <span>Équipes et membres</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
