@@ -1,7 +1,6 @@
 import { Role } from "@chronos/types";
 import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
-import * as clerkPkg from "@clerk/fastify";
-const { getAuth } = clerkPkg;
+import { getAuth } from "@clerk/fastify";
 
 export async function createContext({ req }: CreateFastifyContextOptions) {
   const auth = getAuth(req);

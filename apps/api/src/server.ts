@@ -4,8 +4,7 @@ import cors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import type { OpenAPIV3 } from "openapi-types";
-import * as clerkPkg from "@clerk/fastify";
-const { clerkPlugin } = clerkPkg;
+import { clerkPlugin } from "@clerk/fastify";
 import {
   fastifyTRPCPlugin,
   FastifyTRPCPluginOptions,

@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/forms/invite-bar";
 import { useTrpcClient } from "@/trpc/client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 type TeamsAndMembersProps = {
@@ -61,6 +62,7 @@ export default function TeamsAndMembers({
   members,
   userProfile,
 }: TeamsAndMembersProps) {
+  const router = useRouter();
   const [showUserProfile, setShowUserProfile] = React.useState(false);
   const [openTeam, setOpenTeam] = React.useState<string | null>(null);
   const [showInviteSheet, setShowInviteSheet] = React.useState(false);
@@ -298,6 +300,12 @@ export default function TeamsAndMembers({
       const role = editingMember.role
         ? (editingMember.role as "admin" | "manager" | "member")
         : undefined;
+
+      const selectedTeamId =
+        editingMember.team_id && editingMember.team_id !== "__none__"
+          ? String(editingMember.team_id)
+          : null;
+
       await trpc.user.update.mutate({
         id: editingMemberId,
         firstName: editingMember.firstName ?? undefined,
@@ -308,7 +316,7 @@ export default function TeamsAndMembers({
       // handle team change
       const prev = localMembers.find((m) => m.id === editingMemberId);
       const prevTeam = prev?.team_id ?? null;
-      const newTeam = (editingMember.team_id as string) ?? null;
+      const newTeam = selectedTeamId;
 
       if (prevTeam !== newTeam) {
         try {
@@ -351,6 +359,7 @@ export default function TeamsAndMembers({
       toast.success("Membre modifié", {
         description: `Le membre a été mis à jour avec succès`,
       });
+      router.refresh();
     } catch (err) {
       console.error("Failed to update member:", err);
       toast.error("Erreur", {

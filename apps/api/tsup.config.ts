@@ -12,15 +12,13 @@ export default defineConfig({
   splitting: false,
   treeshake: true,
   dts: false,
-  external: [
-    // Keep Clerk external - it's a CommonJS module that should not be bundled
-    "@clerk/fastify",
-  ],
   noExternal: [
     // Bundle workspace packages to resolve path aliases and TypeScript
     "@chronos/types",
     "@chronos/data",
     "@chronos/supabase",
+    // Bundle Clerk to avoid ESM/CJS interop issues on Vercel
+    "@clerk/fastify",
   ],
   banner: {
     js: `import { createRequire } from 'module';
