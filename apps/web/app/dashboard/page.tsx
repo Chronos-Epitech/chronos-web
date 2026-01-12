@@ -5,6 +5,8 @@ import { z } from "zod";
 import { Team } from "@chronos/types";
 import DashboardClient from "@/components/ui/pages/dashboard-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   let teams: z.infer<typeof Team>[] = [];
   let userProfile = null;

@@ -1,18 +1,16 @@
-version: "3.9"
-
 services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile.bun
+      dockerfile: apps/api/Dockerfile
       target: runner
     container_name: chronos-api
     env_file:
-      - .env
+      - .env.test.example
     environment:
       - NODE_ENV=production
       - PORT=4000
-      - HOSTNAME=0.0.0.0
+      - HOST=0.0.0.0
     expose:
       - "4000"
     networks:
@@ -26,7 +24,7 @@ services:
       target: runner
     container_name: chronos-web
     env_file:
-      - .env
+      - .env.test.example
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -37,19 +35,6 @@ services:
       - chronos
     depends_on:
       - api
-    restart: unless-stopped
-
-  db:
-    image: postgres:15-alpine
-    container_name: chronos-db
-    environment:
-      POSTGRES_USER: chronos
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: chronos
-    volumes:
-      - chronos-db-data:/var/lib/postgresql/data
-    networks:
-      - chronos
     restart: unless-stopped
 
   proxy:
@@ -69,6 +54,3 @@ services:
 networks:
   chronos:
     driver: bridge
-
-volumes:
-  chronos-db-data:

@@ -57,6 +57,16 @@ bunx turbo dev --filter=@chronos/api
 bunx turbo dev --filter=@chronos/web
 ```
 
+### Building Individual Services
+
+```bash
+# Build only the API server
+bunx turbo build --filter=@chronos/api
+
+# Build only the web application
+bunx turbo build --filter=@chronos/web
+```
+
 ### Other Available Commands
 
 ```bash

@@ -2,12 +2,12 @@ export {};
 
 // Shared roles across apps
 import type { Constants } from "./supabase-types";
-import type { AuthObject } from "@clerk/types";
+import type { SessionAuthObject } from "@clerk/backend";
 
 export type Role = (typeof Constants.public.Enums.role)[number];
 
 export type DataCtx = {
-  auth: AuthObject;
+  auth: SessionAuthObject;
   role: Role;
   accessToken: string | null;
 };
