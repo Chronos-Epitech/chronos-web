@@ -3,13 +3,7 @@
 import * as React from "react";
 import type { Tables } from "@chronos/types";
 import { Separator } from "@/components/ui/elements/separator";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/cards/card";
+import { Card, CardContent } from "@/components/ui/cards/card";
 import { Button } from "@/components/ui/buttons/button";
 import {
   Avatar,
@@ -38,18 +32,12 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar/sidebar";
 import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
-import { UserProfile, useClerk, SignedIn, UserButton } from "@clerk/nextjs";
-import { Pencil, Users, MoreHorizontal, Trash2, Plus } from "lucide-react";
+import { UserProfile, SignedIn, UserButton } from "@clerk/nextjs";
+import { Pencil, Users, Trash2, Plus } from "lucide-react";
 import {
   InviteSheet,
   InviteSheetTrigger,
 } from "@/components/ui/forms/invite-bar";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/elements/dropdown-menu";
 import { useTrpcClient } from "@/trpc/client";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -81,7 +69,6 @@ export default function TeamsAndMembers({
   members,
   userProfile,
 }: TeamsAndMembersProps) {
-  const clerk = useClerk();
   const [showUserProfile, setShowUserProfile] = React.useState(false);
   const [openTeam, setOpenTeam] = React.useState<string | null>(null);
   const [showInviteSheet, setShowInviteSheet] = React.useState(false);
@@ -119,7 +106,7 @@ export default function TeamsAndMembers({
     async function fetchUsers() {
       try {
         const users = await trpc.user.getAll.query();
-        setAllUsers(users as any[]);
+        setAllUsers(users as Member[]);
       } catch (err) {
         console.error("Failed to fetch users:", err);
       }
@@ -127,26 +114,56 @@ export default function TeamsAndMembers({
     fetchUsers();
   }, [trpc]);
 
-  function getFirstName(m: any) {
-    return m.firstName ?? m.first_name ?? m.name?.first ?? "";
+  interface MemberLike {
+    firstName?: string | null;
+    first_name?: string | null;
+    name?: { first?: string | null; last?: string | null } | null;
+    lastName?: string | null;
+    last_name?: string | null;
+    email?: string | null;
+    email_address?: string | null;
+    emailAddress?: string | null;
+    emailAddresses?: Array<{ email_address?: string; emailAddress?: string }>;
+    role?: string | null;
+    public_metadata?: { role?: string | null };
+    publicMetadata?: { role?: string | null };
   }
-  function getLastName(m: any) {
-    return m.lastName ?? m.last_name ?? m.name?.last ?? "";
-  }
-  function getEmail(m: any) {
+
+  function getFirstName(m: MemberLike | Member): string {
     return (
-      m.email ??
-      m.email_address ??
-      m.emailAddress ??
-      (m.emailAddresses &&
-        m.emailAddresses[0] &&
-        (m.emailAddresses[0].email_address ??
-          m.emailAddresses[0].emailAddress)) ??
+      m.firstName ??
+      (m as MemberLike).first_name ??
+      (m as MemberLike).name?.first ??
       ""
     );
   }
-  function getRole(m: any) {
-    return m.role ?? m.public_metadata?.role ?? m.publicMetadata?.role ?? "";
+  function getLastName(m: MemberLike | Member): string {
+    return (
+      m.lastName ??
+      (m as MemberLike).last_name ??
+      (m as MemberLike).name?.last ??
+      ""
+    );
+  }
+  function getEmail(m: MemberLike | Member): string {
+    return (
+      m.email ??
+      (m as MemberLike).email_address ??
+      (m as MemberLike).emailAddress ??
+      ((m as MemberLike).emailAddresses &&
+        (m as MemberLike).emailAddresses![0] &&
+        ((m as MemberLike).emailAddresses![0].email_address ??
+          (m as MemberLike).emailAddresses![0].emailAddress)) ??
+      ""
+    );
+  }
+  function getRole(m: MemberLike | Member): string {
+    return (
+      m.role ??
+      (m as MemberLike).public_metadata?.role ??
+      (m as MemberLike).publicMetadata?.role ??
+      ""
+    );
   }
 
   const membersByTeam = React.useMemo(() => {
@@ -209,7 +226,21 @@ export default function TeamsAndMembers({
         managerId: newTeamManagerId,
         memberIds: newTeamMemberIds.length > 0 ? newTeamMemberIds : undefined,
       });
-      setLocalTeams((prev) => [...prev, newTeam as any]);
+      setLocalTeams((prev) => [...prev, newTeam as Team]);
+
+      // Update localMembers to reflect the new team assignments
+      const memberIdsInNewTeam = new Set([
+        newTeamManagerId,
+        ...newTeamMemberIds,
+      ]);
+      setLocalMembers((prev) =>
+        prev.map((m) =>
+          memberIdsInNewTeam.has(m.id)
+            ? { ...m, team_id: (newTeam as Team).id }
+            : m,
+        ),
+      );
+
       setIsCreateTeamSheetOpen(false);
       setNewTeamName("");
       setNewTeamManagerId("");
@@ -260,11 +291,11 @@ export default function TeamsAndMembers({
     const m = localMembers.find((x) => x.id === memberId);
     setEditingMemberId(memberId);
     setEditingMember({
-      firstName: getFirstName(m),
-      lastName: getLastName(m),
-      email: getEmail(m),
-      role: getRole(m),
-      team_id: (m as any).team_id ?? null,
+      firstName: m ? getFirstName(m) : "",
+      lastName: m ? getLastName(m) : "",
+      email: m ? getEmail(m) : "",
+      role: m ? getRole(m) : "",
+      team_id: m?.team_id ?? null,
     });
     setIsMemberSheetOpen(true);
   }
@@ -283,7 +314,7 @@ export default function TeamsAndMembers({
       });
 
       // handle team change
-      const prev = localMembers.find((m) => m.id === editingMemberId) as any;
+      const prev = localMembers.find((m) => m.id === editingMemberId);
       const prevTeam = prev?.team_id ?? null;
       const newTeam = (editingMember.team_id as string) ?? null;
 
@@ -490,11 +521,7 @@ export default function TeamsAndMembers({
                                       <div className="flex items-center gap-2 flex-1 min-w-0">
                                         <Avatar className="h-6 w-6">
                                           <AvatarImage
-                                            src={
-                                              (m as any).avatarUrl ??
-                                              (m as any).avatar_url ??
-                                              undefined
-                                            }
+                                            src={m.avatarUrl ?? undefined}
                                             alt={`${getFirstName(m) || ""} ${getLastName(m) || ""}`}
                                           />
                                           <AvatarFallback className="text-[10px]">
@@ -570,11 +597,7 @@ export default function TeamsAndMembers({
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <Avatar className="h-7 w-7">
                                   <AvatarImage
-                                    src={
-                                      (m as any).avatarUrl ??
-                                      (m as any).avatar_url ??
-                                      undefined
-                                    }
+                                    src={m.avatarUrl ?? undefined}
                                     alt={`${getFirstName(m) || ""} ${getLastName(m) || ""}`}
                                   />
                                   <AvatarFallback className="text-xs">
@@ -642,15 +665,15 @@ export default function TeamsAndMembers({
         <Sheet open={isTeamSheetOpen} onOpenChange={setIsTeamSheetOpen}>
           <SheetContent side="right" className="w-full sm:max-w-md p-6">
             <SheetHeader className="mb-6">
-              <SheetTitle>Modifier l'équipe</SheetTitle>
+              <SheetTitle>Modifier l&apos;équipe</SheetTitle>
               <SheetDescription>
-                Modifiez le nom de l'équipe et gérez ses membres
+                Modifiez le nom de l&apos;équipe et gérez ses membres
               </SheetDescription>
             </SheetHeader>
             <div className="space-y-6">
               <div>
                 <label className="text-sm font-medium mb-2 block">
-                  Nom de l'équipe
+                  Nom de l&apos;équipe
                 </label>
                 <Input
                   value={editingTeamName}
@@ -661,7 +684,7 @@ export default function TeamsAndMembers({
 
               <div>
                 <div className="text-sm font-medium mb-3">
-                  Membres de l'équipe
+                  Membres de l&apos;équipe
                 </div>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto">
                   {(membersByTeam.get(editingTeamId ?? "") || []).length ===
@@ -678,11 +701,7 @@ export default function TeamsAndMembers({
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <Avatar>
                             <AvatarImage
-                              src={
-                                (m as any).avatarUrl ??
-                                (m as any).avatar_url ??
-                                undefined
-                              }
+                              src={m.avatarUrl ?? undefined}
                               alt={`${getFirstName(m) || ""} ${getLastName(m) || ""}`}
                             />
                             <AvatarFallback>
@@ -917,7 +936,7 @@ export default function TeamsAndMembers({
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">
-                  Nom de l'équipe
+                  Nom de l&apos;équipe
                 </label>
                 <Input
                   value={newTeamName}

@@ -26,10 +26,7 @@ interface AppSidebarProps {
   userProfile?: Tables<"users"> | null;
 }
 
-export function AppSidebar({
-  onSettingsClick,
-  userProfile,
-}: AppSidebarProps = {}) {
+export function AppSidebar({ userProfile }: AppSidebarProps = {}) {
   const router = useRouter();
   const trpc = useTrpcClient();
   const clerk = useClerk();
@@ -74,7 +71,7 @@ export function AppSidebar({
           if (teamMembers) {
             const allMemberIds = [
               teamMembers.manager?.id,
-              ...(teamMembers.users?.map((u: any) => u.id) || []),
+              ...(teamMembers.users?.map((u: { id: string }) => u.id) || []),
             ];
             if (allMemberIds.includes(userProfile.id)) {
               isMember = true;

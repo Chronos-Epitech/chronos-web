@@ -11,7 +11,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar/sidebar";
 import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
-import { UserProfile, useClerk, SignedIn, UserButton } from "@clerk/nextjs";
+import { UserProfile, SignedIn, UserButton } from "@clerk/nextjs";
 import { MoreHorizontal, X } from "lucide-react";
 import {
   DropdownMenu,
@@ -52,7 +52,6 @@ export default function TeamBoardClient({
   teamId,
 }: TeamBoardClientProps) {
   const trpc = useTrpcClient();
-  const clerk = useClerk();
   const [showUserProfile, setShowUserProfile] = useState(false);
 
   const authorization =
@@ -145,10 +144,6 @@ export default function TeamBoardClient({
     }
   };
 
-  // Récupération des données utilisateur depuis Supabase
-  const firstName = userProfile?.first_name ?? "Prénom";
-  const lastName = userProfile?.last_name ?? "Nom";
-
   return (
     <SidebarProvider>
       <AppSidebar
@@ -193,7 +188,9 @@ export default function TeamBoardClient({
                         key={p}
                         size="sm"
                         variant={period === p ? "default" : "outline"}
-                        onClick={() => setPeriod(p as any)}
+                        onClick={() =>
+                          setPeriod(p as "week" | "month" | "year")
+                        }
                       >
                         {p}
                       </Button>
@@ -335,7 +332,9 @@ export default function TeamBoardClient({
                     key={p}
                     size="sm"
                     variant={popupPeriod === p ? "default" : "outline"}
-                    onClick={() => setPopupPeriod(p as any)}
+                    onClick={() =>
+                      setPopupPeriod(p as "week" | "month" | "year")
+                    }
                   >
                     {p}
                   </Button>

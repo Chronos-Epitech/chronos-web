@@ -2,7 +2,6 @@ import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { Team } from "@chronos/types";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import TeamsAndMembers from "@/components/ui/pages/teams-and-members";
 
@@ -42,7 +41,7 @@ export default async function Page() {
     if (role !== "admin") {
       return redirect("/");
     }
-  } catch (e) {
+  } catch {
     // if anything goes wrong, redirect to home
     return redirect("/");
   }
@@ -70,15 +69,44 @@ export default async function Page() {
   }
 
   // Récupération des membres par équipe pour attacher team_id
-  const members: any[] = [];
+  interface UserLike {
+    firstName?: string | null;
+    first_name?: string | null;
+    name?: { first?: string | null; last?: string | null } | null;
+    lastName?: string | null;
+    last_name?: string | null;
+    email?: string | null;
+    email_address?: string | null;
+    emailAddress?: string | null;
+    emailAddresses?: Array<{ email_address?: string; emailAddress?: string }>;
+    role?: string | null;
+    public_metadata?: { role?: string | null };
+    publicMetadata?: { role?: string | null };
+    avatarUrl?: string | null;
+    avatar_url?: string | null;
+    imageUrl?: string | null;
+    image_url?: string | null;
+  }
+
+  interface MemberData {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    role: string | null;
+    avatarUrl: string | null;
+    team_id: string | null;
+  }
+
+  const members: MemberData[] = [];
   try {
-    function getFirstName(u: any) {
+    function getFirstName(u: UserLike): string | null {
       return u.firstName ?? u.first_name ?? u.name?.first ?? null;
     }
-    function getLastName(u: any) {
+    function getLastName(u: UserLike): string | null {
       return u.lastName ?? u.last_name ?? u.name?.last ?? null;
     }
-    function getEmail(u: any) {
+    function getEmail(u: UserLike): string | null {
       return (
         u.email ??
         u.email_address ??
@@ -90,12 +118,12 @@ export default async function Page() {
         null
       );
     }
-    function getRole(u: any) {
+    function getRole(u: UserLike): string | null {
       return (
         u.role ?? u.public_metadata?.role ?? u.publicMetadata?.role ?? null
       );
     }
-    function getAvatar(u: any) {
+    function getAvatar(u: UserLike): string | null {
       return u.avatarUrl ?? u.avatar_url ?? u.imageUrl ?? u.image_url ?? null;
     }
 
