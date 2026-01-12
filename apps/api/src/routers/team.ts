@@ -58,12 +58,33 @@ export const teamRouter = router({
     })
     .input(CreateTeamInput)
     .output(Team)
-    .mutation(({ ctx, input }) =>
-      teams.createTeam(
-        { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
-        input,
-      ),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      console.log("[teamRouter.create] Received request");
+      console.log("[teamRouter.create] Context:", {
+        userId: ctx.auth?.userId,
+        role: ctx.role,
+        hasAccessToken: !!ctx.accessToken,
+        accessTokenLength: ctx.accessToken?.length,
+      });
+      console.log("[teamRouter.create] Input:", input);
+
+      try {
+        const result = await teams.createTeam(
+          { auth: ctx.auth, role: ctx.role, accessToken: ctx.accessToken },
+          input,
+        );
+        console.log("[teamRouter.create] Success:", result?.id);
+        return result;
+      } catch (error) {
+        console.error("[teamRouter.create] Error caught:", error);
+        console.error("[teamRouter.create] Error details:", {
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          name: error instanceof Error ? error.name : undefined,
+        });
+        throw error;
+      }
+    }),
 
   update: managerProcedure
     .meta({
