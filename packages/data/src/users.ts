@@ -4,7 +4,7 @@ import { assertAdmin } from "./roles";
 import { createClerkClient } from "@clerk/backend";
 import { mapClerkErrorToTrpc } from "./utils";
 import { createClient } from "@supabase/supabase-js";
-import { Database } from "@chronos/types/src/supabase-types";
+import { Database } from "@chronos/types";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY!,

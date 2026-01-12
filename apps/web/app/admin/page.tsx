@@ -1,9 +1,11 @@
 import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { Team } from "@chronos/types";
+import { Team, type Member } from "@chronos/types";
 import { redirect } from "next/navigation";
 import TeamsAndMembers from "@/components/ui/pages/teams-and-members";
+
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
   let teams: z.infer<typeof Team>[] = [];
@@ -88,17 +90,7 @@ export default async function Page() {
     image_url?: string | null;
   }
 
-  interface MemberData {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-    role: string | null;
-    avatarUrl: string | null;
-    team_id: string | null;
-  }
-
-  const members: MemberData[] = [];
+  const members: Member[] = [];
   try {
     function getFirstName(u: UserLike): string | null {
       return u.firstName ?? u.first_name ?? u.name?.first ?? null;

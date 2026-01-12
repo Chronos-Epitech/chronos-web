@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Constants } from "./supabase-types";
+import { Constants, type Tables } from "./supabase-types";
 
 export const UserId = z.string();
 export const TeamId = z.uuid();
@@ -102,3 +102,17 @@ export const CheckInInput = z.object({
 export const CheckOutInput = z.object({
   user_id: UserId.optional(), // Optional for self check-out
 });
+
+// Member type for UI components (supports both null and undefined)
+export type Member = {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  role?: string | null;
+  avatarUrl?: string | null;
+  team_id?: string | null;
+};
+
+// Team type alias using Supabase Tables type
+export type Team = Tables<"teams">;

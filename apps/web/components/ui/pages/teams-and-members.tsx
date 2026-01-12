@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { Tables } from "@chronos/types";
+import type { Tables, Member, Team } from "@chronos/types";
 import { Separator } from "@/components/ui/elements/separator";
 import { Card, CardContent } from "@/components/ui/cards/card";
 import { Button } from "@/components/ui/buttons/button";
@@ -19,6 +19,14 @@ import {
   SheetDescription,
   SheetFooter,
 } from "@/components/ui/elements/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -41,22 +49,6 @@ import {
 import { useTrpcClient } from "@/trpc/client";
 import Image from "next/image";
 import { toast } from "sonner";
-
-type Team = {
-  id: string;
-  name: string;
-  manager_id?: string;
-};
-
-type Member = {
-  id: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  email?: string | null;
-  role?: string;
-  avatarUrl?: string | null;
-  team_id?: string | null;
-};
 
 type TeamsAndMembersProps = {
   teams: Team[];
@@ -97,6 +89,12 @@ export default function TeamsAndMembers({
   );
   const [editingMember, setEditingMember] = React.useState<Partial<Member>>({});
   const [isMemberSheetOpen, setIsMemberSheetOpen] = React.useState(false);
+
+  // delete confirmation state
+  const [teamToDelete, setTeamToDelete] = React.useState<Team | null>(null);
+  const [memberToDelete, setMemberToDelete] = React.useState<Member | null>(
+    null,
+  );
 
   React.useEffect(() => setLocalTeams(teams || []), [teams]);
   React.useEffect(() => setLocalMembers(members || []), [members]);
@@ -256,21 +254,15 @@ export default function TeamsAndMembers({
     }
   }
 
-  async function handleDeleteTeam(team: Team) {
-    const teamMembers = membersByTeam.get(team.id) || [];
+  async function confirmDeleteTeam() {
+    if (!teamToDelete) return;
 
-    if (
-      !window.confirm(
-        `Êtes-vous sûr de vouloir supprimer l'équipe "${team.name}" ? Cette action est irréversible. ${teamMembers.length > 0 ? `L'équipe contient ${teamMembers.length} membre${teamMembers.length > 1 ? "s" : ""}.` : ""}`,
-      )
-    ) {
-      return;
-    }
-
+    const team = teamToDelete;
     const previousTeams = [...localTeams];
 
     // Optimistic update
     setLocalTeams((prev) => prev.filter((t) => t.id !== team.id));
+    setTeamToDelete(null);
 
     try {
       await trpc.team.delete.mutate({ id: team.id });
@@ -367,24 +359,20 @@ export default function TeamsAndMembers({
     }
   }
 
-  async function handleDeleteUser(member: Member) {
+  async function confirmDeleteUser() {
+    if (!memberToDelete) return;
+
+    const member = memberToDelete;
     const memberName =
       `${getFirstName(member) || ""} ${getLastName(member) || ""}`.trim() ||
       getEmail(member) ||
       "cet utilisateur";
 
-    if (
-      !window.confirm(
-        `Êtes-vous sûr de vouloir supprimer ${memberName} ? Cette action est irréversible.`,
-      )
-    ) {
-      return;
-    }
-
     const previousMembers = [...localMembers];
 
     // Optimistic update
     setLocalMembers((prev) => prev.filter((m) => m.id !== member.id));
+    setMemberToDelete(null);
 
     try {
       await trpc.user.delete.mutate({ id: member.id });
@@ -487,7 +475,7 @@ export default function TeamsAndMembers({
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => handleDeleteTeam(team)}
+                                  onClick={() => setTeamToDelete(team)}
                                   className="h-7 px-2 text-destructive hover:text-destructive"
                                 >
                                   <Trash2 className="h-3 w-3" />
@@ -554,7 +542,7 @@ export default function TeamsAndMembers({
                                         <Button
                                           size="sm"
                                           variant="ghost"
-                                          onClick={() => handleDeleteUser(m)}
+                                          onClick={() => setMemberToDelete(m)}
                                           className="h-6 px-1.5 text-destructive hover:text-destructive"
                                         >
                                           <Trash2 className="h-3 w-3" />
@@ -630,7 +618,7 @@ export default function TeamsAndMembers({
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => handleDeleteUser(m)}
+                                  onClick={() => setMemberToDelete(m)}
                                   className="h-7 px-2 text-destructive hover:text-destructive"
                                 >
                                   <Trash2 className="h-3 w-3" />
@@ -1059,6 +1047,70 @@ export default function TeamsAndMembers({
 
         {/* Invite Sheet */}
         <InviteSheet open={showInviteSheet} onOpenChange={setShowInviteSheet} />
+
+        {/* Delete Team Confirmation Dialog */}
+        <Dialog
+          open={teamToDelete !== null}
+          onOpenChange={(open) => !open && setTeamToDelete(null)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Supprimer l&apos;équipe</DialogTitle>
+              <DialogDescription>
+                Êtes-vous sûr de vouloir supprimer l&apos;équipe &quot;
+                {teamToDelete?.name}&quot; ? Cette action est irréversible.
+                {teamToDelete &&
+                  (membersByTeam.get(teamToDelete.id) || []).length > 0 && (
+                    <span className="block mt-2 text-destructive">
+                      L&apos;équipe contient{" "}
+                      {(membersByTeam.get(teamToDelete.id) || []).length} membre
+                      {(membersByTeam.get(teamToDelete.id) || []).length > 1
+                        ? "s"
+                        : ""}
+                      .
+                    </span>
+                  )}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setTeamToDelete(null)}>
+                Annuler
+              </Button>
+              <Button variant="destructive" onClick={confirmDeleteTeam}>
+                Supprimer
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Member Confirmation Dialog */}
+        <Dialog
+          open={memberToDelete !== null}
+          onOpenChange={(open) => !open && setMemberToDelete(null)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Supprimer l&apos;utilisateur</DialogTitle>
+              <DialogDescription>
+                Êtes-vous sûr de vouloir supprimer{" "}
+                {memberToDelete
+                  ? `${getFirstName(memberToDelete) || ""} ${getLastName(memberToDelete) || ""}`.trim() ||
+                    getEmail(memberToDelete) ||
+                    "cet utilisateur"
+                  : "cet utilisateur"}{" "}
+                ? Cette action est irréversible.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMemberToDelete(null)}>
+                Annuler
+              </Button>
+              <Button variant="destructive" onClick={confirmDeleteUser}>
+                Supprimer
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SidebarInset>
     </SidebarProvider>
   );
