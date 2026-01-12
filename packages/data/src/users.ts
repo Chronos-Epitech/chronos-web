@@ -3,10 +3,17 @@ import { CreateUserInput, UpdateUserInput, DataCtx } from "@chronos/types";
 import { assertAdmin } from "./roles";
 import { createClerkClient } from "@clerk/backend";
 import { mapClerkErrorToTrpc } from "./utils";
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "@chronos/types";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY!,
 });
+
+const supabaseAdmin = createClient<Database>(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!,
+);
 
 export async function listUsers(ctx: DataCtx) {
   assertAdmin(ctx.role);
@@ -73,6 +80,31 @@ export async function updateUser(
     }
 
     const user = await clerkClient.users.updateUser(input.id, updateData);
+
+    // Also update Supabase users table
+    const supabaseUpdate: any = {};
+    if (input.firstName !== undefined) {
+      supabaseUpdate.first_name = input.firstName;
+    }
+    if (input.lastName !== undefined) {
+      supabaseUpdate.last_name = input.lastName;
+    }
+    if (input.role !== undefined) {
+      supabaseUpdate.role = input.role;
+    }
+
+    if (Object.keys(supabaseUpdate).length > 0) {
+      const { error: supabaseError } = await supabaseAdmin
+        .from("users")
+        .update(supabaseUpdate)
+        .eq("id", input.id);
+
+      if (supabaseError) {
+        console.error("Failed to update user in Supabase:", supabaseError);
+        // Don't throw, just log the error - Clerk update was successful
+      }
+    }
+
     return user;
   } catch (error) {
     return mapClerkErrorToTrpc(error);

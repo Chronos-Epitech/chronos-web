@@ -1,3 +1,4 @@
+// imports
 import { trpc } from "@/trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -10,7 +11,7 @@ export default async function Page() {
   let teams: z.infer<typeof Team>[] = [];
   let userProfile = null;
 
-  // Récupération du profil utilisateur depuis Supabase
+  // get user profile from Supabase
   try {
     userProfile = await trpc.user.me.query();
   } catch (error) {
@@ -30,7 +31,7 @@ export default async function Page() {
     }
   }
 
-  // Récupération des équipes
+  // get teams
   try {
     teams = await trpc.team.getAll.query();
   } catch (error) {

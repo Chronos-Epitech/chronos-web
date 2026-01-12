@@ -139,7 +139,7 @@ The test suite validates the following API endpoints:
 
 ### Test Design Decisions
 
-**Why some tests were modified or removed:**
+**Why some tests were removed:**
 
 1. **Team Creation Test**: The original test attempted to create a new team with a manager who might already have a team. Since the business logic enforces that a manager can only have one team, the test was modified to use the existing team for CRUD operations instead of creating a new one. This approach:
    - Avoids conflicts with existing data
